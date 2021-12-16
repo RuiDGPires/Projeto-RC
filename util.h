@@ -5,6 +5,11 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#define TRUE 1
+#define FALSE 0
+
+typedef char bool; // smallest size
+
 #define RED "\033[0;31m"
 #define GREEN "\033[0;32m"
 #define YELLOW "\033[0;33m"
