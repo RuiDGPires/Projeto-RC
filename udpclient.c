@@ -75,7 +75,7 @@ int main(int argc, char *argv[]){
   char nLine = '\n';
 
   fd = socket(AF_INET, SOCK_DGRAM, 0);
-  if(fd == -1) /*error*/ THROW_ERROR("");
+  ASSERT(fd != -1, "Unable to create socket");
   DEBUG_MSG("Socket created\n");
 
   memset(&hints, 0, sizeof hints);
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
   hints.ai_socktype = SOCK_DGRAM;
 
   errcode = getaddrinfo(dsip, dsport, &hints, &res);
-  if(errcode!=0) /*error*/ THROW_ERROR("");
+  ASSERT(errcode == 0, "Unable to get address info");
   DEBUG_MSG("Got address info\n");
 
   do{
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
     size_t size = get_line(commandLineBuffer, stdin);
 
     n = sendto(fd, commandLineBuffer, size, 0, res->ai_addr, res->ai_addrlen);
-    if(n == -1) /*error*/ THROW_ERROR(""); 
+    ASSERT(n != -1, "Unable to send message");
     DEBUG_MSG_SECTION("UDP");
     DEBUG_MSG("Message sent: %s", commandLineBuffer);
 
