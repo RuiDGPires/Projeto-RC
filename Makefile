@@ -6,7 +6,7 @@ all: udpclient
 debug: FLAGS = -D DEBUG
 debug: all
 
-udpclient: udpclient.c
+udpclient: udpclient.c libio.c
 	$(CC) $(FLAGS) -o $@ $^
 
 clean:

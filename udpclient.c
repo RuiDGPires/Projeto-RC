@@ -7,40 +7,7 @@
 #include <string.h>
 
 #include "util.h"
-
-//-------------------------------
-// ENUM GENERATION
-
-#define FOREACH_SERVER_COMMAND(SERVER_COMMAND) \
-        SERVER_COMMAND(REG)   \
-        SERVER_COMMAND(RRG)   \
-        SERVER_COMMAND(UNR)   \
-        SERVER_COMMAND(RUN)   \
-        SERVER_COMMAND(LOG)   \
-        SERVER_COMMAND(RLO)   \
-        SERVER_COMMAND(OUT)   \
-        SERVER_COMMAND(ROU)   \
-        SERVER_COMMAND(GLS)   \
-        SERVER_COMMAND(RGL)   \
-        SERVER_COMMAND(GSR)   \
-        SERVER_COMMAND(RGS)   \
-        SERVER_COMMAND(GUR)   \
-        SERVER_COMMAND(RGU)   \
-        SERVER_COMMAND(GLM)   \
-        SERVER_COMMAND(RGM)   
-
-#define GENERATE_ENUM(ENUM) ENUM,
-#define GENERATE_STRING(STRING) #STRING,
-
-enum {
-    FOREACH_SERVER_COMMAND(GENERATE_ENUM)
-};
-
-static const char *command_str[] = {
-    FOREACH_SERVER_COMMAND(GENERATE_STRING)
-};
-
-//-------------------------------
+#include "libio.h"
 
 #define DEFAULT_DSIP "localhost"
 #define DEFAULT_DSPORT "58065" // 58000 + GN
@@ -104,7 +71,7 @@ void check_uid(const char str[]){
   ASSERT(size == 5, "Invalid user name size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i])) THROW_ERROR("Invalid user name characters");
+    if (!isdigit(str[i])) throw_error("Invalid user name characters");
 }
 
 void check_pass(const char str[]){
@@ -112,7 +79,7 @@ void check_pass(const char str[]){
   ASSERT(size == 8, "Invalid password size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i])) THROW_ERROR("Invalid password characters");
+    if (!isdigit(str[i]) && !isalpha(str[i])) throw_error("Invalid password characters");
 }
 
 void check_gid(const char str[]){
@@ -120,7 +87,7 @@ void check_gid(const char str[]){
   ASSERT(size == 2, "Group number");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i])) THROW_ERROR("Invalid group id chars");
+    if (!isdigit(str[i])) throw_error("Invalid group id chars");
 }
 
 void check_gname(const char str[]){
@@ -128,7 +95,7 @@ void check_gname(const char str[]){
   ASSERT(size == 2, "Group number");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') THROW_ERROR("Invalid group id chars");
+    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') throw_error("Invalid group id chars");
 }
 
 char *get_word(char *str[]){
@@ -159,6 +126,7 @@ bool parse_input (Connection_context *context, Login_Context *login_context, cha
     check_pass(pass);
 
     sscanf(buffer, "%s %s %s", "REG", uid, pass);
+    printf("%s\n", buffer);
 
     send_message(context, buffer, buffer);
     DEBUG_MSG("Response: %s\n", buffer);
@@ -214,7 +182,7 @@ bool parse_input (Connection_context *context, Login_Context *login_context, cha
   }else if (strcmp(command, "ulist") == 0 || strcmp(command, "ul") == 0){
   }else if (strcmp(command, "post") == 0){
   }else if (strcmp(command, "retrieve") == 0 || strcmp(command, "r") == 0){
-  }else THROW_ERROR("Unkown command");
+  }else throw_error("Unkown command");
 }
 
 Connection_context *init_connection(const char dsip[], const char dsport[]){
@@ -263,7 +231,7 @@ void parse_args(char *dsip, char *dsport, int argc, char *argv[]){
       strcpy(dsip, argv[i+1]);
     else if (strcmp(argv[i], "-p") == 0)
       strcpy(dsport, argv[i+1]);
-    else THROW_ERROR("Unkown command line argument");
+    else throw_error("Unkown command line argument");
   }
 
   DEFAULT(dsip, DEFAULT_DSIP);
@@ -272,9 +240,6 @@ void parse_args(char *dsip, char *dsport, int argc, char *argv[]){
   DEBUG_MSG("dsip set to: %s\n", dsip);
   DEBUG_MSG("dsport set to: %s\n", dsport);
 }
-
-
-
 
 int main(int argc, char *argv[]){
   DEBUG_MSG_SECTION("MAIN");
