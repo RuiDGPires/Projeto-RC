@@ -198,7 +198,7 @@ bool parse_input (Connection_context *context, Login_Context *login_context, cha
   }else if (strcmp(command, "logout") == 0){
     char buffer[BUFFER_SIZE];
 
-    sscanf(buffer, "%s %s %s", "RLO", login_context->uid, login_context->pass);
+    sscanf(buffer, "%s %s %s", "OUT", login_context->uid, login_context->pass);
 
     send_message(context, buffer, buffer);
     login_context->is_logged = FALSE;
