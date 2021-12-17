@@ -55,13 +55,14 @@ void send_message(Connection_context *context, const char message[], char respon
   n = sendto(context->fd, message, size, 0, context->res->ai_addr, context->res->ai_addrlen);
   ASSERT(n != -1, "Unable to send message");
   DEBUG_MSG_SECTION("UDP");
-  DEBUG_MSG("Message sent: %s", message);
+  DEBUG_MSG("Message sent: %s\n", message);
 
   DEBUG_MSG("Awaiting response...\n");
+  memset(response, ' ', BUFFER_SIZE);
   n = recvfrom(context->fd, response, BUFFER_SIZE, 0, (struct sockaddr*) &context->addr, &context->addrlen);
   ASSERT(n != -1, "Unable to receive message");
   response[n] = '\0';
-  DEBUG_MSG("Message received: %s\n", response);
+  DEBUG_MSG("Response: %s\n", response);
 }
 
 #include <ctype.h>
@@ -125,11 +126,9 @@ bool parse_input (Connection_context *context, Login_Context *login_context, cha
     check_uid(uid);
     check_pass(pass);
 
-    sscanf(buffer, "%s %s %s", "REG", uid, pass);
-    printf("%s\n", buffer);
+    sprintf(buffer, "%s %s %s\n", "REG", uid, pass);
 
     send_message(context, buffer, buffer);
-    DEBUG_MSG("Response: %s\n", buffer);
     return 1;
   }else if (strcmp(command, "unregister") == 0){
     char buffer[BUFFER_SIZE];
@@ -140,10 +139,9 @@ bool parse_input (Connection_context *context, Login_Context *login_context, cha
     check_uid(uid);
     check_pass(pass);
 
-    sscanf(buffer, "%s %s %s", "UNR", uid, pass);
+    sprintf(buffer, "%s %s %s\n", "UNR", uid, pass);
 
     send_message(context, buffer, buffer);
-    DEBUG_MSG("Response: %s\n", buffer);
     return 1;
   }else if (strcmp(command, "login") == 0){
     char buffer[BUFFER_SIZE];
@@ -154,19 +152,18 @@ bool parse_input (Connection_context *context, Login_Context *login_context, cha
     check_uid(uid);
     check_pass(pass);
 
-    sscanf(buffer, "%s %s %s", "LOG", uid, pass);
+    sprintf(buffer, "%s %s %s\n", "LOG", uid, pass);
 
     login_context->is_logged = TRUE;
     strcpy(login_context->uid, uid);
     strcpy(login_context->pass, pass);
 
     send_message(context, buffer, buffer);
-    DEBUG_MSG("Response: %s\n", buffer);
     return 1;
   }else if (strcmp(command, "logout") == 0){
     char buffer[BUFFER_SIZE];
 
-    sscanf(buffer, "%s %s %s", "OUT", login_context->uid, login_context->pass);
+    sprintf(buffer, "%s %s %s\n", "OUT", login_context->uid, login_context->pass);
 
     send_message(context, buffer, buffer);
     login_context->is_logged = FALSE;
