@@ -116,92 +116,92 @@ void check_pass(const char str[]){
 }
 
 void check_gid(const char str[]){
-	size_t size = strlen(str);
-	ASSERT(size == 2, "Group number");
-	
-	for (size_t i = 0; i < size; i++)
-		if (!isdigit(str[i])) THROW_ERROR("Invalid group id chars");
+  size_t size = strlen(str);
+  ASSERT(size == 2, "Group number");
+
+  for (size_t i = 0; i < size; i++)
+    if (!isdigit(str[i])) THROW_ERROR("Invalid group id chars");
 }
 
 void check_gname(const char str[]){
-	size_t size = strlen(str);
-	ASSERT(size == 2, "Group number");
-	
-	for (size_t i = 0; i < size; i++)
-		if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') THROW_ERROR("Invalid group id chars");
+  size_t size = strlen(str);
+  ASSERT(size == 2, "Group number");
+
+  for (size_t i = 0; i < size; i++)
+    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') THROW_ERROR("Invalid group id chars");
 }
 
 char *get_word(char *str[]){
-	DEBUG_MSG_SECTION("WRD");
+  DEBUG_MSG_SECTION("WRD");
   char command_buffer[BUFFER_SIZE];
   sscanf(*str, "%[^ ]", command_buffer);
 
-	size_t size = strlen(command_buffer);
+  size_t size = strlen(command_buffer);
 
-	(*str)[size-((*str)[size-1] == '\n')*2] = '\0';
-	
-	char *ret = *str;
-	*str = &((*str)[size+1]);
+  (*str)[size-((*str)[size-1] == '\n')*2] = '\0';
 
-	return ret;
+  char *ret = *str;
+  *str = &((*str)[size+1]);
+
+  return ret;
 }
 
 bool parse_input (Connection_context *context, Login_Context *login_context, char str[]){
-	char *command = get_word(&str);
+  char *command = get_word(&str);
 
   if (strcmp(command, "reg") == 0){
-		char buffer[BUFFER_SIZE];
-		char *uid, *pass;
-		uid = get_word(&str);
-		pass = get_word(&str);
+    char buffer[BUFFER_SIZE];
+    char *uid, *pass;
+    uid = get_word(&str);
+    pass = get_word(&str);
 
-		check_uid(uid);
-		check_pass(pass);
+    check_uid(uid);
+    check_pass(pass);
 
-		sscanf(buffer, "%s %s %s", "REG", uid, pass);
+    sscanf(buffer, "%s %s %s", "REG", uid, pass);
 
-		send_message(context, buffer, buffer);
-		DEBUG_MSG("Response: %s\n", buffer);
+    send_message(context, buffer, buffer);
+    DEBUG_MSG("Response: %s\n", buffer);
     return 1;
   }else if (strcmp(command, "unregister") == 0){
-		char buffer[BUFFER_SIZE];
-		char *uid, *pass;
-		uid = get_word(&str);
-		pass = get_word(&str);
+    char buffer[BUFFER_SIZE];
+    char *uid, *pass;
+    uid = get_word(&str);
+    pass = get_word(&str);
 
-		check_uid(uid);
-		check_pass(pass);
+    check_uid(uid);
+    check_pass(pass);
 
-		sscanf(buffer, "%s %s %s", "UNR", uid, pass);
+    sscanf(buffer, "%s %s %s", "UNR", uid, pass);
 
-		send_message(context, buffer, buffer);
-		DEBUG_MSG("Response: %s\n", buffer);
+    send_message(context, buffer, buffer);
+    DEBUG_MSG("Response: %s\n", buffer);
     return 1;
   }else if (strcmp(command, "login") == 0){
-		char buffer[BUFFER_SIZE];
-		char *uid, *pass;
-		uid = get_word(&str);
-		pass = get_word(&str);
+    char buffer[BUFFER_SIZE];
+    char *uid, *pass;
+    uid = get_word(&str);
+    pass = get_word(&str);
 
-		check_uid(uid);
-		check_pass(pass);
+    check_uid(uid);
+    check_pass(pass);
 
-		sscanf(buffer, "%s %s %s", "LOG", uid, pass);
+    sscanf(buffer, "%s %s %s", "LOG", uid, pass);
 
-		login_context->is_logged = TRUE;
-		strcpy(login_context->uid, uid);
-		strcpy(login_context->pass, pass);
+    login_context->is_logged = TRUE;
+    strcpy(login_context->uid, uid);
+    strcpy(login_context->pass, pass);
 
-		send_message(context, buffer, buffer);
-		DEBUG_MSG("Response: %s\n", buffer);
-		return 1;
+    send_message(context, buffer, buffer);
+    DEBUG_MSG("Response: %s\n", buffer);
+    return 1;
   }else if (strcmp(command, "logout") == 0){
-		char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
 
-		sscanf(buffer, "%s %s %s", "RLO", login_context->uid, login_context->pass);
+    sscanf(buffer, "%s %s %s", "RLO", login_context->uid, login_context->pass);
 
-		send_message(context, buffer, buffer);
-		login_context->is_logged = FALSE;
+    send_message(context, buffer, buffer);
+    login_context->is_logged = FALSE;
   }else if (strcmp(command, "showuid") == 0 || strcmp(command, "su") == 0){
   }else if (strcmp(command, "exit") == 0){
     return 0;
@@ -284,7 +284,7 @@ int main(int argc, char *argv[]){
 
   Connection_context *context = init_connection(dsip, dsport); // Inicializa conecção e guarda informação em context
 
-	Login_Context login_context = (Login_Context) {.is_logged = FALSE};
+  Login_Context login_context = (Login_Context) {.is_logged = FALSE};
 
   char input_buffer[BUFFER_SIZE];
 
