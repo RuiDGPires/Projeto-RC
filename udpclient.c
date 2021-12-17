@@ -115,12 +115,20 @@ void check_pass(const char str[]){
     if (!isdigit(str[i]) && !isalpha(str[i])) THROW_ERROR("Invalid password characters");
 }
 
-bool check_gid(const char str[]){
+void check_gid(const char str[]){
 	size_t size = strlen(str);
 	ASSERT(size == 2, "Group number");
 	
 	for (size_t i = 0; i < size; i++)
 		if (!isdigit(str[i])) THROW_ERROR("Invalid group id chars");
+}
+
+void check_gname(const char str[]){
+	size_t size = strlen(str);
+	ASSERT(size == 2, "Group number");
+	
+	for (size_t i = 0; i < size; i++)
+		if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') THROW_ERROR("Invalid group id chars");
 }
 
 char *get_word(char *str[]){
@@ -192,6 +200,7 @@ bool parse_input (Connection_context *context, Login_Context *login_context, cha
 
 		sscanf(buffer, "%s %s %s", "UNR", login_context->uid, login_context->pass);
 
+		send_message(context, buffer, buffer);
 		login_context->is_logged = FALSE;
   }else if (strcmp(command, "showuid") == 0 || strcmp(command, "su") == 0){
   }else if (strcmp(command, "exit") == 0){
