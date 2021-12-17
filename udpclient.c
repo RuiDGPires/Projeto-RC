@@ -54,7 +54,12 @@ typedef struct {
   socklen_t addrlen;
   struct addrinfo hints, *res;
   struct sockaddr_in addr;
-} Context;
+} Connection_context;
+
+typedef struct {
+	bool is_logged;
+	char uid[BUFFER_SIZE], pass[BUFFER_SIZE];
+} Login_Context;
 
 
 size_t get_line(char buffer[], FILE *stream){
@@ -76,63 +81,135 @@ size_t get_line(char buffer[], FILE *stream){
   return i;
 }
 
-#include <ctype.h>
+void send_message(Connection_context *context, const char message[], char response[]){
+  context->addrlen = sizeof(context->addr);
+  size_t size = strlen(message), n;
 
-bool check_uid(const char str[]){
-  size_t size = strlen(str);
-  ASSERT(size == 5, "Invalid user name size");
-  for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i])) return FALSE;
+  n = sendto(context->fd, message, size, 0, context->res->ai_addr, context->res->ai_addrlen);
+  ASSERT(n != -1, "Unable to send message");
+  DEBUG_MSG_SECTION("UDP");
+  DEBUG_MSG("Message sent: %s", message);
+
+  DEBUG_MSG("Awaiting response...\n");
+  n = recvfrom(context->fd, response, BUFFER_SIZE, 0, (struct sockaddr*) &context->addr, &context->addrlen);
+  ASSERT(n != -1, "Unable to receive message");
+  response[n] = '\0';
+  DEBUG_MSG("Message received: %s\n", response);
 }
 
-bool check_pass(const char str[]){
+#include <ctype.h>
+
+void check_uid(const char str[]){
   size_t size = strlen(str);
   ASSERT(size == 5, "Invalid user name size");
+
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i])) return FALSE;
+    if (!isdigit(str[i])) THROW_ERROR("Invalid user name characters");
+}
+
+void check_pass(const char str[]){
+  size_t size = strlen(str);
+  ASSERT(size == 8, "Invalid password size");
+
+  for (size_t i = 0; i < size; i++)
+    if (!isdigit(str[i]) && !isalpha(str[i])) THROW_ERROR("Invalid password characters");
 }
 
 bool check_gid(const char str[]){
-
+	size_t size = strlen(str);
+	ASSERT(size == 2, "Group number");
+	
+	for (size_t i = 0; i < size; i++)
+		if (!isdigit(str[i])) THROW_ERROR("Invalid group id chars");
 }
 
-bool parse_input (Context *context, char str[]){
+char *get_word(char *str[]){
+	DEBUG_MSG_SECTION("WRD");
   char command_buffer[BUFFER_SIZE];
+  sscanf(*str, "%[^ ]", command_buffer);
 
-  sscanf(str, "%[^ ]", command_buffer);
+	size_t size = strlen(command_buffer);
 
-  size_t size = strlen(command_buffer);
-  str = &(str[size-1]);
+	(*str)[size-((*str)[size-1] == '\n')*2] = '\0';
+	
+	char *ret = *str;
+	*str = &((*str)[size+1]);
 
-  if (command_buffer[size-1] == '\n') {
-    command_buffer[size-2] = '\0';
-  }else {
-    command_buffer[size-1] = '\0';
-  }
+	return ret;
+}
 
-  if (strcmp(command_buffer, "reg") == 0){
+bool parse_input (Connection_context *context, Login_Context *login_context, char str[]){
+	char *command = get_word(&str);
 
+  if (strcmp(command, "reg") == 0){
+		char buffer[BUFFER_SIZE];
+		char *uid, *pass;
+		uid = get_word(&str);
+		pass = get_word(&str);
+
+		check_uid(uid);
+		check_pass(pass);
+
+		sscanf(buffer, "%s %s %s", "REG", uid, pass);
+
+		send_message(context, buffer, buffer);
+		DEBUG_MSG("Response: %s\n", buffer);
     return 1;
-  }else if (strcmp(command_buffer, "unregister") == 0){
-  }else if (strcmp(command_buffer, "login") == 0){
-  }else if (strcmp(command_buffer, "logout") == 0){
-  }else if (strcmp(command_buffer, "showuid") == 0 || strcmp(command_buffer, "su") == 0){
-  }else if (strcmp(command_buffer, "exit") == 0){
+  }else if (strcmp(command, "unregister") == 0){
+		char buffer[BUFFER_SIZE];
+		char *uid, *pass;
+		uid = get_word(&str);
+		pass = get_word(&str);
+
+		check_uid(uid);
+		check_pass(pass);
+
+		sscanf(buffer, "%s %s %s", "UNR", uid, pass);
+
+		send_message(context, buffer, buffer);
+		DEBUG_MSG("Response: %s\n", buffer);
+    return 1;
+  }else if (strcmp(command, "login") == 0){
+		char buffer[BUFFER_SIZE];
+		char *uid, *pass;
+		uid = get_word(&str);
+		pass = get_word(&str);
+
+		check_uid(uid);
+		check_pass(pass);
+
+		sscanf(buffer, "%s %s %s", "UNR", uid, pass);
+
+		login_context->is_logged = TRUE;
+		strcpy(login_context->uid, uid);
+		strcpy(login_context->pass, pass);
+
+		send_message(context, buffer, buffer);
+		DEBUG_MSG("Response: %s\n", buffer);
+		return 1;
+  }else if (strcmp(command, "logout") == 0){
+		char buffer[BUFFER_SIZE];
+
+		sscanf(buffer, "%s %s %s", "UNR", login_context->uid, login_context->pass);
+
+		login_context->is_logged = FALSE;
+  }else if (strcmp(command, "showuid") == 0 || strcmp(command, "su") == 0){
+  }else if (strcmp(command, "exit") == 0){
     return 0;
-  }else if (strcmp(command_buffer, "groups") == 0 || strcmp(command_buffer, "gl") == 0){
-  }else if (strcmp(command_buffer, "subscribe") == 0 || strcmp(command_buffer, "s") == 0){
-  }else if (strcmp(command_buffer, "unsubscribe") == 0 || strcmp(command_buffer, "u") == 0){
-  }else if (strcmp(command_buffer, "my_groups") == 0 || strcmp(command_buffer, "mgl") == 0){
-  }else if (strcmp(command_buffer, "select") == 0 || strcmp(command_buffer, "sag") == 0){
-  }else if (strcmp(command_buffer, "showgid") == 0 || strcmp(command_buffer, "sg") == 0){
-  }else if (strcmp(command_buffer, "ulist") == 0 || strcmp(command_buffer, "ul") == 0){
-  }else if (strcmp(command_buffer, "post") == 0){
-  }else if (strcmp(command_buffer, "retrieve") == 0 || strcmp(command_buffer, "r") == 0){
+  }else if (strcmp(command, "groups") == 0 || strcmp(command, "gl") == 0){
+  }else if (strcmp(command, "subscribe") == 0 || strcmp(command, "s") == 0){
+  }else if (strcmp(command, "unsubscribe") == 0 || strcmp(command, "u") == 0){
+  }else if (strcmp(command, "my_groups") == 0 || strcmp(command, "mgl") == 0){
+  }else if (strcmp(command, "select") == 0 || strcmp(command, "sag") == 0){
+  }else if (strcmp(command, "showgid") == 0 || strcmp(command, "sg") == 0){
+  }else if (strcmp(command, "ulist") == 0 || strcmp(command, "ul") == 0){
+  }else if (strcmp(command, "post") == 0){
+  }else if (strcmp(command, "retrieve") == 0 || strcmp(command, "r") == 0){
   }else THROW_ERROR("Unkown command");
 }
 
-Context *init_connection(const char dsip[], const char dsport[]){
-  Context *context = (Context *) malloc(sizeof(Context));
+Connection_context *init_connection(const char dsip[], const char dsport[]){
+  Connection_context *context = (Connection_context *) malloc(sizeof(Connection_context));
   
   strcpy(context->dsip, dsip); 
   strcpy(context->dsport, dsport); 
@@ -152,7 +229,7 @@ Context *init_connection(const char dsip[], const char dsport[]){
   return context;
 }
 
-void close_connection(Context **context){
+void close_connection(Connection_context **context){
   freeaddrinfo((*context)->res);
   close((*context)->fd);
 
@@ -160,21 +237,6 @@ void close_connection(Context **context){
   *context = NULL;
 }
 
-void send_message(Context *context, const char message[], char response[]){
-  context->addrlen = sizeof(context->addr);
-  size_t size = strlen(message), n;
-
-  n = sendto(context->fd, message, size, 0, context->res->ai_addr, context->res->ai_addrlen);
-  ASSERT(n != -1, "Unable to send message");
-  DEBUG_MSG_SECTION("UDP");
-  DEBUG_MSG("Message sent: %s", message);
-
-  DEBUG_MSG("Awaiting response...\n");
-  n = recvfrom(context->fd, response, BUFFER_SIZE, 0, (struct sockaddr*) &context->addr, &context->addrlen);
-  ASSERT(n != -1, "Unable to receive message");
-  response[n] = '\0';
-  DEBUG_MSG("Message received: %s\n", response);
-}
 
 #define CLEAR(var) var[0] = '\0'
 #define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)
@@ -211,7 +273,9 @@ int main(int argc, char *argv[]){
   char dsip[BUFFER_SIZE], dsport[BUFFER_SIZE];
   parse_args(dsip, dsport, argc, argv); // Recebe command line arguments e guarda em dsip e dsport
 
-  Context *context = init_connection(dsip, dsport); // Inicializa conecção e guarda informação em context
+  Connection_context *context = init_connection(dsip, dsport); // Inicializa conecção e guarda informação em context
+
+	Login_Context login_context = (Login_Context) {.is_logged = FALSE};
 
   char input_buffer[BUFFER_SIZE];
 
@@ -222,7 +286,7 @@ int main(int argc, char *argv[]){
 
     size_t size = get_line(input_buffer, stdin);
 
-    keep_prompt = parse_input(context, input_buffer);
+    keep_prompt = parse_input(context, &login_context, input_buffer);
   }while(keep_prompt);
 
   close_connection(&context);
