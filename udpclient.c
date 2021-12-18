@@ -1,33 +1,12 @@
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 #include <string.h>
 
 #include "util.h"
 #include "libio.h"
+#include "debug.h"
+#include "session.h"
 
 #define DEFAULT_DSIP "localhost"
 #define DEFAULT_DSPORT "58065" // 58000 + GN
-#define BUFFER_SIZE 128
-
-typedef struct {
-  char dsip[BUFFER_SIZE], dsport[BUFFER_SIZE];
-
-  int fd;
-  ssize_t n;
-  socklen_t addrlen;
-  struct addrinfo hints, *res;
-  struct sockaddr_in addr;
-} Connection_context;
-
-typedef struct {
-	bool is_logged;
-	char uid[BUFFER_SIZE], pass[BUFFER_SIZE];
-} Login_Context;
-
 
 size_t get_line(char buffer[], FILE *stream){
   size_t i = 0;
@@ -48,22 +27,6 @@ size_t get_line(char buffer[], FILE *stream){
   return i;
 }
 
-void send_message(Connection_context *context, const char message[], char response[]){
-  context->addrlen = sizeof(context->addr);
-  size_t size = strlen(message), n;
-
-  n = sendto(context->fd, message, size, 0, context->res->ai_addr, context->res->ai_addrlen);
-  ASSERT(n != -1, "Unable to send message");
-  DEBUG_MSG_SECTION("UDP");
-  DEBUG_MSG("Message sent: %s\n", message);
-
-  DEBUG_MSG("Awaiting response...\n");
-  memset(response, ' ', BUFFER_SIZE);
-  n = recvfrom(context->fd, response, BUFFER_SIZE, 0, (struct sockaddr*) &context->addr, &context->addrlen);
-  ASSERT(n != -1, "Unable to receive message");
-  response[n] = '\0';
-  DEBUG_MSG("Response: %s\n", response);
-}
 
 #include <ctype.h>
 
@@ -180,35 +143,6 @@ bool parse_input (Connection_context *context, Login_Context *login_context, cha
   }else if (strcmp(command, "post") == 0){
   }else if (strcmp(command, "retrieve") == 0 || strcmp(command, "r") == 0){
   }else throw_error("Unkown command");
-}
-
-Connection_context *init_connection(const char dsip[], const char dsport[]){
-  Connection_context *context = (Connection_context *) malloc(sizeof(Connection_context));
-  
-  strcpy(context->dsip, dsip); 
-  strcpy(context->dsport, dsport); 
-
-  context->fd = socket(AF_INET, SOCK_DGRAM, 0);
-  ASSERT(context->fd != -1, "Unable to create socket");
-  DEBUG_MSG("Socket created\n");
-
-  memset(&context->hints, 0, sizeof context->hints);
-  context->hints.ai_family = AF_INET;
-  context->hints.ai_socktype = SOCK_DGRAM;
-
-  int errcode = getaddrinfo(context->dsip, context->dsport, &context->hints, &context->res);
-  ASSERT(errcode == 0, "Unable to get address info");
-  DEBUG_MSG("Got address info\n");
-
-  return context;
-}
-
-void close_connection(Connection_context **context){
-  freeaddrinfo((*context)->res);
-  close((*context)->fd);
-
-  free(*context);
-  *context = NULL;
 }
 
 

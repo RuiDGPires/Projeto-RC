@@ -3,10 +3,12 @@ FLAGS =
 
 all: udpclient
 
+C_FILES := $(wildcard *.c)
+
 debug: FLAGS = -D DEBUG
 debug: all
 
-udpclient: udpclient.c libio.c
+udpclient: *.c
 	$(CC) $(FLAGS) -o $@ $^
 
 clean:

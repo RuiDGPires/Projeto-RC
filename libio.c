@@ -9,8 +9,6 @@ void throw_error(const char *fmt, ...){
 
   fflush(stdout);
 
-  PRINT_FUNC_NAME();
-
   fprintf(stderr, RED);
   vfprintf(stderr, fmt, args);
   fprintf(stderr, "\n");
@@ -27,8 +25,6 @@ void warning(const char *fmt, ...){
   va_list args;
   va_start(args, fmt);
 
-  PRINT_FUNC_NAME();
-
   printf(MAGENTA);
   vprintf(fmt, args);
   printf("\n%s", NC);
@@ -39,8 +35,6 @@ void warning(const char *fmt, ...){
 void success(const char *fmt, ...){
   va_list args;
   va_start(args, fmt);
-
-  PRINT_FUNC_NAME();
 
   printf(GREEN);
   vprintf(fmt, args);
