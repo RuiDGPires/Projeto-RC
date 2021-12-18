@@ -1,5 +1,5 @@
-#ifndef SESSION_H__
-#define SESSION_H__
+#ifndef CONNECTION_H__
+#define CONNECTION_H__
 
 #include <sys/types.h>
 #include <sys/socket.h>

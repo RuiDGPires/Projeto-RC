@@ -1,4 +1,4 @@
-#include "session.h"
+#include "connection.h"
 #include "debug.h"
 
 #include <stdlib.h>
