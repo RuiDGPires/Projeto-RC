@@ -1,6 +1,6 @@
-C_FILES := $(filter-out ../udpclient.c, $(wildcard ../*.c)) $(wildcard *.c)
+C_FILES := $(filter-out ../client.c, $(wildcard ../*.c)) $(wildcard *.c)
 
-all:
+all: $(C_FILES)
 	gcc $(C_FILES) -o test -D DEBUG
 
 
