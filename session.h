@@ -8,7 +8,16 @@
 #include <netdb.h>
 #define BUFFER_SIZE 128
 
-typedef struct {
+struct session_context_s;
+struct connection_context_s;
+
+typedef struct session_context_s {
+	int is_logged;
+	char uid[BUFFER_SIZE], pass[BUFFER_SIZE];
+  struct connection_context_s *connection;
+} session_context_t;
+
+typedef struct connection_context_s {
   char dsip[BUFFER_SIZE], dsport[BUFFER_SIZE];
 
   int fd;
@@ -16,16 +25,16 @@ typedef struct {
   socklen_t addrlen;
   struct addrinfo hints, *res;
   struct sockaddr_in addr;
-} Connection_context;
 
-typedef struct {
-	int is_logged;
-	char uid[BUFFER_SIZE], pass[BUFFER_SIZE];
-} Login_Context;
+  session_context_t *session;
+} connection_context_t;
 
-void send_message(Connection_context *context, const char message[], char response[]);
 
-Connection_context *init_connection(const char dsip[], const char dsport[]);
+session_context_t *init_session(connection_context_t *);
+void close_session(session_context_t **);
 
-void close_connection(Connection_context **context);
+connection_context_t *init_connection(const char *, const char *);
+void close_connection(connection_context_t **);
+void send_message(connection_context_t *, const char *, char *);
+
 #endif

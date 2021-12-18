@@ -1,9 +1,9 @@
 #include <string.h>
 
-#include "util.h"
-#include "debug.h"
-#include "libio.h"
-#include "session.h"
+#include "../util.h"
+#include "../debug.h"
+#include "../libio.h"
+#include "../session.h"
 
 #define DEFAULT_DSIP "localhost"
 #define DEFAULT_DSPORT "58065" // 58000 + GN
@@ -76,78 +76,6 @@ char *get_word(char *str[]){
   return ret;
 }
 
-bool parse_input (connection_context_t *context, char str[]){
-  char *command = get_word(&str);
-
-  if (strcmp(command, "reg") == 0){
-    char buffer[BUFFER_SIZE];
-    char *uid, *pass;
-    uid = get_word(&str);
-    pass = get_word(&str);
-
-    check_uid(uid);
-    check_pass(pass);
-
-    sprintf(buffer, "%s %s %s\n", "REG", uid, pass);
-
-    send_message(context, buffer, buffer);
-    return 1;
-  }else if (strcmp(command, "unregister") == 0){
-    char buffer[BUFFER_SIZE];
-    char *uid, *pass;
-    uid = get_word(&str);
-    pass = get_word(&str);
-
-    check_uid(uid);
-    check_pass(pass);
-
-    sprintf(buffer, "%s %s %s\n", "UNR", uid, pass);
-
-    send_message(context, buffer, buffer);
-    return 1;
-  }else if (strcmp(command, "login") == 0){
-    char buffer[BUFFER_SIZE];
-    char *uid, *pass;
-    uid = get_word(&str);
-    pass = get_word(&str);
-
-    check_uid(uid);
-    check_pass(pass);
-
-    sprintf(buffer, "%s %s %s\n", "LOG", uid, pass);
-    
-    session_context_t *session = context->session;
-
-    session->is_logged = 1;
-    strcpy(session->uid, uid);
-    strcpy(session->pass, pass);
-
-    send_message(context, buffer, buffer);
-    return 1;
-  }else if (strcmp(command, "logout") == 0){
-    char buffer[BUFFER_SIZE];
-
-    session_context_t *session = context->session;
-    sprintf(buffer, "%s %s %s\n", "OUT", session->uid, session->pass);
-
-    send_message(context, buffer, buffer);
-    session->is_logged = 0;
-  }else if (strcmp(command, "showuid") == 0 || strcmp(command, "su") == 0){
-  }else if (strcmp(command, "exit") == 0){
-    return 0;
-  }else if (strcmp(command, "groups") == 0 || strcmp(command, "gl") == 0){
-  }else if (strcmp(command, "subscribe") == 0 || strcmp(command, "s") == 0){
-  }else if (strcmp(command, "unsubscribe") == 0 || strcmp(command, "u") == 0){
-  }else if (strcmp(command, "my_groups") == 0 || strcmp(command, "mgl") == 0){
-  }else if (strcmp(command, "select") == 0 || strcmp(command, "sag") == 0){
-  }else if (strcmp(command, "showgid") == 0 || strcmp(command, "sg") == 0){
-  }else if (strcmp(command, "ulist") == 0 || strcmp(command, "ul") == 0){
-  }else if (strcmp(command, "post") == 0){
-  }else if (strcmp(command, "retrieve") == 0 || strcmp(command, "r") == 0){
-  }else throw_error("Unkown command");
-}
-
-
 #define CLEAR(var) var[0] = '\0'
 #define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)
 
@@ -184,15 +112,15 @@ int main(int argc, char *argv[]){
 
   char input_buffer[BUFFER_SIZE];
 
-  int keep_prompt;
   do{
     DEBUG_MSG_SECTION("INPT");
     DEBUG_MSG("Awaiting input...\n");
 
     size_t size = get_line(input_buffer, stdin);
-
-    keep_prompt = parse_input(context, input_buffer);
-  }while(keep_prompt);
+    
+    input_buffer[size-1] = '\0';
+    send_message(context, input_buffer, input_buffer);
+  }while(1);
 
   close_connection(&context);
 }
