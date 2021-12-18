@@ -1,33 +1,19 @@
 #include <string.h>
+#include <ctype.h>
 
 #include "util.h"
 #include "debug.h"
 #include "libio.h"
-#include "session.h"
+#include "connection.h"
 
 #define DEFAULT_DSIP "localhost"
 #define DEFAULT_DSPORT "58065" // 58000 + GN
 
 size_t get_line(char buffer[], FILE *stream){
-  size_t i = 0;
-  char c;
-
-  do{
-    c = getc(stream);
-    if (i == BUFFER_SIZE - 2) {
-      printf("Line size exceeds buffer capacity");
-      exit(1);
-    }
-    buffer[i++] = c;
-  }while(c != '\n');
-
-  buffer[i++] = '\n';
-  buffer[i] = '\0';
-
-  return i;
+  (void) fscanf(stream, "%[^\n]", buffer);
+  (void) getc(stdin);
+  return strlen(buffer);
 }
-
-#include <ctype.h>
 
 void check_uid(const char str[]){
   size_t size = strlen(str);
