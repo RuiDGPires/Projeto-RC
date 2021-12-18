@@ -76,7 +76,7 @@ bool parse_input (connection_context_t *context, char str[]){
 
     sprintf(buffer, "%s %s %s\n", "REG", uid, pass);
 
-    send_message(context, buffer, buffer);
+    send_udp_message(context, buffer, buffer);
     return 1;
   }else if (strcmp(command, "unregister") == 0){
     char buffer[BUFFER_SIZE];
@@ -89,7 +89,7 @@ bool parse_input (connection_context_t *context, char str[]){
 
     sprintf(buffer, "%s %s %s\n", "UNR", uid, pass);
 
-    send_message(context, buffer, buffer);
+    send_udp_message(context, buffer, buffer);
     return 1;
   }else if (strcmp(command, "login") == 0){
     char buffer[BUFFER_SIZE];
@@ -108,7 +108,7 @@ bool parse_input (connection_context_t *context, char str[]){
     strcpy(session->uid, uid);
     strcpy(session->pass, pass);
 
-    send_message(context, buffer, buffer);
+    send_udp_message(context, buffer, buffer);
     return 1;
   }else if (strcmp(command, "logout") == 0){
     char buffer[BUFFER_SIZE];
@@ -116,7 +116,7 @@ bool parse_input (connection_context_t *context, char str[]){
     session_context_t *session = context->session;
     sprintf(buffer, "%s %s %s\n", "OUT", session->uid, session->pass);
 
-    send_message(context, buffer, buffer);
+    send_udp_message(context, buffer, buffer);
     session->is_logged = 0;
   }else if (strcmp(command, "showuid") == 0 || strcmp(command, "su") == 0){
   }else if (strcmp(command, "exit") == 0){
