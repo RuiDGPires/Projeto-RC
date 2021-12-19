@@ -59,8 +59,8 @@ void close_tcp_connection(tcp_info_t **info){
 
 session_context_t *init_session(connection_context_t *connection){
   session_context_t *session = (session_context_t *) malloc(sizeof(session_context_t));
+  logout(session);
 
-  session->is_logged = 0;
   session->connection = connection;
 
   return session;
@@ -68,16 +68,21 @@ session_context_t *init_session(connection_context_t *connection){
 
 void close_session(session_context_t **session_p){
   session_context_t *session = *session_p;
-
-  // Realizar loggout caso o utilizador esteja logged in
-  if (session->is_logged){
-    char buffer[BUFFER_SIZE];
-    sprintf(buffer, "%s %s %s\n", "OUT", session->uid, session->pass);
-    send_udp_message(session->connection, buffer, buffer);
-  }
-
   free(session);
   *session_p = NULL;
+}
+
+void login(session_context_t *session, char uid[], char pass[]){
+  strcpy(session->uid, uid);
+  strcpy(session->pass, pass);
+}
+
+void logout(session_context_t *session){
+  session->uid[0] = '\0';
+}
+
+int is_logged(session_context_t *session){
+  return session->uid[0] != '\0';
 }
 
 connection_context_t *init_connection(const char dsip[], const char dsport[]){

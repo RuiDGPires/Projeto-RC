@@ -28,7 +28,6 @@ struct session_context_s;
 struct connection_context_s;
 
 typedef struct session_context_s {
-	int is_logged;
 	char uid[BUFFER_SIZE], pass[BUFFER_SIZE];
   struct connection_context_s *connection;
 } session_context_t;
@@ -50,6 +49,9 @@ void close_tcp_connection(tcp_info_t **);
 
 session_context_t *init_session(connection_context_t *);
 void close_session(session_context_t **);
+void login(session_context_t *, char *, char *);
+int is_logged(session_context_t *);
+void logout(session_context_t *);
 
 connection_context_t *init_connection(const char *, const char *);
 void close_connection(connection_context_t **);

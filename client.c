@@ -93,7 +93,6 @@ bool parse_input (connection_context_t *context, char str[]){
     }else {
       warning("An error occured while registering user");
     }
-    return 1;
   }else if (strcmp(command, "unregister") == 0){
     char buffer[BUFFER_SIZE];
     char response_buffer[BUFFER_SIZE];
@@ -118,7 +117,6 @@ bool parse_input (connection_context_t *context, char str[]){
     }else {
       warning("Invalid user or incorrect password");
     }
-    return 1;
   }else if (strcmp(command, "login") == 0){
     char buffer[BUFFER_SIZE];
     char response_buffer[BUFFER_SIZE];
@@ -133,9 +131,6 @@ bool parse_input (connection_context_t *context, char str[]){
     
     session_context_t *session = context->session;
 
-    strcpy(session->uid, uid);
-    strcpy(session->pass, pass);
-
     send_udp_message(context, buffer, response_buffer);
 
     char *response = response_buffer;
@@ -144,22 +139,21 @@ bool parse_input (connection_context_t *context, char str[]){
 
     char *status = get_word(&response);
     if (strcmp(status, "OK") == 0){
-      if (session->is_logged){
+      if (is_logged(session)){
         warning("You are already logged in");
       }else{
         success("You are now logged in");
-        session->is_logged = 1;
+        login(session, uid, pass);
       }
     }else {
       warning("Invalid user or incorrect password");
     }
-    return 1;
   }else if (strcmp(command, "logout") == 0){
     char buffer[BUFFER_SIZE];
     char response_buffer[BUFFER_SIZE];
     session_context_t *session = context->session;
 
-    if (!(session->is_logged)){
+    if (!is_logged(session)){
       warning("You are not logged in");
       return 1;
     }
@@ -173,9 +167,15 @@ bool parse_input (connection_context_t *context, char str[]){
     EXPECT_RESPONSE(get_word(&response), "OK");
 
     success("You are now logged out");
-    session->is_logged = 0;
-    return 1;
+    logout(session);
   }else if (strcmp(command, "showuid") == 0 || strcmp(command, "su") == 0){
+    session_context_t *session = context->session;
+
+    if (!is_logged(session)){
+      warning("You are not logged in");
+      return 1;
+    }
+    printf("%s\n", session->uid);
   }else if (strcmp(command, "exit") == 0){
     return 0;
   }else if (strcmp(command, "groups") == 0 || strcmp(command, "gl") == 0){
@@ -188,6 +188,8 @@ bool parse_input (connection_context_t *context, char str[]){
   }else if (strcmp(command, "post") == 0){
   }else if (strcmp(command, "retrieve") == 0 || strcmp(command, "r") == 0){
   }else throw_error("Unkown command");
+
+  return 1;
 }
 
 #define CLEAR(var) var[0] = '\0'
