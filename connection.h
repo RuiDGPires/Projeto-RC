@@ -55,7 +55,10 @@ void logout(session_context_t *);
 
 connection_context_t *init_connection(const char *, const char *);
 void close_connection(connection_context_t **);
-void send_udp_message(connection_context_t *, const char *, char *);
-void send_tcp_message(connection_context_t *, const char *, char *);
+
+#define send_udp_message(con, mes, res) send_udp_message_size(con, mes, res, BUFFER_SIZE)
+void send_udp_message_size(connection_context_t *, const char *, char *, size_t);
+#define send_tcp_message(con, mes, res) send_tcp_message_size(con, mes, res, BUFFER_SIZE)
+void send_tcp_message_size(connection_context_t *, const char *, char *, size_t);
 
 #endif

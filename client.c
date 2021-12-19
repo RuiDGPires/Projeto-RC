@@ -81,7 +81,7 @@ bool parse_input (connection_context_t *context, char str[]){
 
     send_udp_message(context, buffer, response_buffer);
 
-    char *response = response_buffer;
+    char *response = response_buffer; // This has to be done for some reason... compiler does not accept casting
 
     EXPECT_RESPONSE(get_word(&response), "RRG");
 
@@ -179,6 +179,28 @@ bool parse_input (connection_context_t *context, char str[]){
   }else if (strcmp(command, "exit") == 0){
     return 0;
   }else if (strcmp(command, "groups") == 0 || strcmp(command, "gl") == 0){
+#define RESPONSE_SIZE BUFFER_SIZE*50
+    char response_buffer[RESPONSE_SIZE];
+    send_udp_message_size(context, "GLS\n", response_buffer, RESPONSE_SIZE);
+    
+    char *response = response_buffer;
+
+    EXPECT_RESPONSE(get_word(&response), "RGL");
+
+    int N = atoi(get_word(&response));
+
+    if (N != 0){
+      success("List of groups:");
+      char *id, *name;
+      for (int i = 0; i < N; i++){
+        id = get_word(&response);
+        name = get_word(&response);
+        printf("\t[%s] %s\n", id, name);
+        (void) get_word(&response);
+      }
+    }else{
+      printf("There are no groups available\n");
+    }
   }else if (strcmp(command, "subscribe") == 0 || strcmp(command, "s") == 0){
   }else if (strcmp(command, "unsubscribe") == 0 || strcmp(command, "u") == 0){
   }else if (strcmp(command, "my_groups") == 0 || strcmp(command, "mgl") == 0){

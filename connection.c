@@ -106,7 +106,7 @@ void close_connection(connection_context_t **context){
   *context = NULL;
 }
 
-void send_udp_message(connection_context_t *context, const char message[], char response[]){
+void send_udp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size){
   context->udp_info->addrlen = sizeof(context->udp_info->addr);
   size_t size = strlen(message), n;
 
@@ -116,13 +116,13 @@ void send_udp_message(connection_context_t *context, const char message[], char 
   DEBUG_MSG("Message sent: %s\n", message);
 
   DEBUG_MSG("Awaiting response...\n");
-  n = recvfrom(context->udp_info->fd, response, BUFFER_SIZE, 0, (struct sockaddr*) &context->udp_info->addr, &context->udp_info->addrlen);
+  n = recvfrom(context->udp_info->fd, response, response_size, 0, (struct sockaddr*) &context->udp_info->addr, &context->udp_info->addrlen);
   ASSERT(n != -1, "Unable to receive message");
   response[n] = '\0';
   DEBUG_MSG("Response: %s\n", response);
 }
 
-void send_tcp_message(connection_context_t *context, const char message[], char response[]){
+void send_tcp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size){
   context->tcp_info->addrlen = sizeof(context->tcp_info->addr);
   size_t size = strlen(message), n;
 
@@ -133,7 +133,7 @@ void send_tcp_message(connection_context_t *context, const char message[], char 
   ASSERT(n != -1, "Unable to send message");
   DEBUG_MSG("Message sent: %s\n", message);
   DEBUG_MSG("Awaiting response...\n");
-  n=read(context->tcp_info->fd, response,128);
+  n=read(context->tcp_info->fd, response, response_size);
   ASSERT(n != -1, "Unable to receive message");
   response[n] = '\0';
 
