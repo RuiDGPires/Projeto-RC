@@ -10,7 +10,7 @@
 #define DEFAULT_DSPORT "58065" // 58000 + GN
 
 size_t get_line(char buffer[], FILE *stream){
-  (void) fscanf(stream, "%[^\n]", buffer);
+  fscanf(stream, "%[^\n]", buffer);
   (void) getc(stdin);
   return strlen(buffer);
 }
@@ -54,7 +54,7 @@ char *get_word(char *str[]){
 
   size_t size = strlen(command_buffer);
 
-  (*str)[size-((*str)[size-1] == '\n')*2] = '\0';
+  (*str)[size-((*str)[size-1] == '\n')] = '\0';
 
   char *ret = *str;
   *str = &((*str)[size+1]);
@@ -62,11 +62,14 @@ char *get_word(char *str[]){
   return ret;
 }
 
+#define EXPECT_RESPONSE(str, expected) ASSERT(strcmp(str, expected)==0, "Unexpected response from server")
+
 bool parse_input (connection_context_t *context, char str[]){
   char *command = get_word(&str);
 
   if (strcmp(command, "reg") == 0){
     char buffer[BUFFER_SIZE];
+    char response_buffer[BUFFER_SIZE];
     char *uid, *pass;
     uid = get_word(&str);
     pass = get_word(&str);
@@ -76,10 +79,24 @@ bool parse_input (connection_context_t *context, char str[]){
 
     sprintf(buffer, "%s %s %s\n", "REG", uid, pass);
 
-    send_udp_message(context, buffer, buffer);
+    send_udp_message(context, buffer, response_buffer);
+
+    char *response = response_buffer;
+
+    EXPECT_RESPONSE(get_word(&response), "RRG");
+
+    char *status = get_word(&response);
+    if (strcmp(status, "OK") == 0){
+      success("User successfully registered");
+    }else if (strcmp(status, "DUP") == 0){
+      warning("User is already registered");
+    }else {
+      warning("An error occured while registering user");
+    }
     return 1;
   }else if (strcmp(command, "unregister") == 0){
     char buffer[BUFFER_SIZE];
+    char response_buffer[BUFFER_SIZE];
     char *uid, *pass;
     uid = get_word(&str);
     pass = get_word(&str);
@@ -89,10 +106,22 @@ bool parse_input (connection_context_t *context, char str[]){
 
     sprintf(buffer, "%s %s %s\n", "UNR", uid, pass);
 
-    send_udp_message(context, buffer, buffer);
+    send_udp_message(context, buffer, response_buffer);
+
+    char *response = response_buffer;
+
+    EXPECT_RESPONSE(get_word(&response), "RUN");
+
+    char *status = get_word(&response);
+    if (strcmp(status, "OK") == 0){
+      success("User successfully unregistered");
+    }else {
+      warning("Invalid user or incorrect password");
+    }
     return 1;
   }else if (strcmp(command, "login") == 0){
     char buffer[BUFFER_SIZE];
+    char response_buffer[BUFFER_SIZE];
     char *uid, *pass;
     uid = get_word(&str);
     pass = get_word(&str);
@@ -104,20 +133,48 @@ bool parse_input (connection_context_t *context, char str[]){
     
     session_context_t *session = context->session;
 
-    session->is_logged = 1;
     strcpy(session->uid, uid);
     strcpy(session->pass, pass);
 
-    send_udp_message(context, buffer, buffer);
+    send_udp_message(context, buffer, response_buffer);
+
+    char *response = response_buffer;
+
+    EXPECT_RESPONSE(get_word(&response), "RLO");
+
+    char *status = get_word(&response);
+    if (strcmp(status, "OK") == 0){
+      if (session->is_logged){
+        warning("You are already logged in");
+      }else{
+        success("You are now logged in");
+        session->is_logged = 1;
+      }
+    }else {
+      warning("Invalid user or incorrect password");
+    }
     return 1;
   }else if (strcmp(command, "logout") == 0){
     char buffer[BUFFER_SIZE];
-
+    char response_buffer[BUFFER_SIZE];
     session_context_t *session = context->session;
+
+    if (!(session->is_logged)){
+      warning("You are not logged in");
+      return 1;
+    }
     sprintf(buffer, "%s %s %s\n", "OUT", session->uid, session->pass);
 
-    send_udp_message(context, buffer, buffer);
+    send_udp_message(context, buffer, response_buffer);
+
+    char *response = response_buffer;
+
+    EXPECT_RESPONSE(get_word(&response), "ROU");
+    EXPECT_RESPONSE(get_word(&response), "OK");
+
+    success("You are now logged out");
     session->is_logged = 0;
+    return 1;
   }else if (strcmp(command, "showuid") == 0 || strcmp(command, "su") == 0){
   }else if (strcmp(command, "exit") == 0){
     return 0;
@@ -132,7 +189,6 @@ bool parse_input (connection_context_t *context, char str[]){
   }else if (strcmp(command, "retrieve") == 0 || strcmp(command, "r") == 0){
   }else throw_error("Unkown command");
 }
-
 
 #define CLEAR(var) var[0] = '\0'
 #define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)

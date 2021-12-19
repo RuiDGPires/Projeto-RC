@@ -128,12 +128,11 @@ void send_tcp_message(connection_context_t *context, const char message[], char 
   n = dprintf(context->tcp_info->fd, "%s\n", message);
   ASSERT(n != -1, "Unable to send message");
   DEBUG_MSG("Message sent: %s\n", message);
-  n=read(context->tcp_info->fd, response,128);
   DEBUG_MSG("Awaiting response...\n");
+  n=read(context->tcp_info->fd, response,128);
   ASSERT(n != -1, "Unable to receive message");
   response[n] = '\0';
 
-  DEBUG_MSG("Awaiting response...\n");
   DEBUG_MSG("Response: %s\n", response);
 }
 
