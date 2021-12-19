@@ -33,7 +33,7 @@ void check_pass(const char str[]){
 
 void check_gid(const char str[]){
   size_t size = strlen(str);
-  ASSERT(size == 2, "Group number");
+  ASSERT(size == 2, "Invalid group number size");
 
   for (size_t i = 0; i < size; i++)
     if (!isdigit(str[i])) throw_error("Invalid group id chars");
@@ -41,10 +41,10 @@ void check_gid(const char str[]){
 
 void check_gname(const char str[]){
   size_t size = strlen(str);
-  ASSERT(size == 2, "Group number");
+  ASSERT(size < 24, "Invalid group name length");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') throw_error("Invalid group id chars");
+    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') throw_error("Invalid group name chars");
 }
 
 char *get_word(char *str[]){

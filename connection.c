@@ -116,7 +116,6 @@ void send_udp_message(connection_context_t *context, const char message[], char 
   DEBUG_MSG("Message sent: %s\n", message);
 
   DEBUG_MSG("Awaiting response...\n");
-  memset(response, ' ', BUFFER_SIZE);
   n = recvfrom(context->udp_info->fd, response, BUFFER_SIZE, 0, (struct sockaddr*) &context->udp_info->addr, &context->udp_info->addrlen);
   ASSERT(n != -1, "Unable to receive message");
   response[n] = '\0';
