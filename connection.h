@@ -1,3 +1,12 @@
+/*----------------------------------------------
+ *
+ * connection.h
+ * -------
+ * Library describing an API to perform connection
+ * related operations between client and server.
+ *
+ *---------------------------------------------*/
+
 #ifndef CONNECTION_H__
 #define CONNECTION_H__
 

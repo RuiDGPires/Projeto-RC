@@ -1,3 +1,11 @@
+/*----------------------------------------------
+ *
+ * libio.h
+ * -------
+ * Library to print formated messages to the user
+ *
+ *---------------------------------------------*/
+
 #ifndef LIB_IO_H__
 #define LIB_IO_H__
 

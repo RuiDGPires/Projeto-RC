@@ -1,3 +1,12 @@
+/*----------------------------------------------
+ *
+ * debug.h
+ * -------
+ * Describes debug related utility, not meant
+ * to be shown in the release version
+ *
+ *---------------------------------------------*/
+
 #ifndef DEBUG_H__
 #define DEBUG_H__
 

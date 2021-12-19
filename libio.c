@@ -1,3 +1,11 @@
+/*----------------------------------------------
+ *
+ * libio.c
+ * -------
+ * Implementation of libio.h
+ *
+ *---------------------------------------------*/
+
 #include "libio.h"
 #include <string.h>
 #include <errno.h>

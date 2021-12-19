@@ -1,3 +1,12 @@
+/*----------------------------------------------
+ *
+ * client.c
+ * -------
+ * Includes the entry point for the application
+ * and base functionality
+ *
+ *---------------------------------------------*/
+
 #include <string.h>
 #include <ctype.h>
 

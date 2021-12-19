@@ -1,3 +1,12 @@
+/*----------------------------------------------
+ *
+ * util.h
+ * -------
+ * Library with some utility
+ * Maybe will be deleted later
+ *
+ *---------------------------------------------*/
+
 #ifndef UTIL_H__
 #define UTIL_H__
 

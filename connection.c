@@ -1,3 +1,11 @@
+/*----------------------------------------------
+ *
+ * connection.c
+ * -------
+ * Implementation of connection.h
+ *
+ *---------------------------------------------*/
+
 #include "connection.h"
 #include "debug.h"
 
