@@ -22,6 +22,8 @@
   #define ASSERT(...) 
 #endif
 
+#define EXPECT(str, expected) ASSERT(strcmp(str, expected)==0, "Unexpected response from server")
+
 #ifdef DEBUG
   #define PRINT_FUNC_NAME() fprintf(stderr, "%s: ", __FUNCTION_NAME__)
 

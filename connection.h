@@ -15,7 +15,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#define BUFFER_SIZE 128
+
+#include "util.h"
 
 typedef struct {
   int fd;

@@ -29,4 +29,7 @@ typedef char bool; // smallest size
 #endif
 #endif
 
+#define BUFFER_SIZE 128
+char *get_word(char **);
+
 #endif
