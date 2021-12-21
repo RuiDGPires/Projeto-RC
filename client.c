@@ -53,6 +53,7 @@ bool parse_input (connection_context_t *context, char str[]){
   }else if (strcmp(command, "showgid") == 0 || strcmp(command, "sg") == 0){
     showgid(context, str);
   }else if (strcmp(command, "ulist") == 0 || strcmp(command, "ul") == 0){
+    ulist(context, str);
   }else if (strcmp(command, "post") == 0){
   }else if (strcmp(command, "retrieve") == 0 || strcmp(command, "r") == 0){
   }else throw_error("Unkown command");

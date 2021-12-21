@@ -87,10 +87,19 @@ void login(session_context_t *session, char uid[], char pass[]){
 
 void logout(session_context_t *session){
   session->uid[0] = '\0';
+  session->gid[0] = '\0';
 }
 
 int is_logged(session_context_t *session){
   return session->uid[0] != '\0';
+}
+
+void select_group(session_context_t *session, char gid[]){
+  strcpy(session->gid, gid);
+}
+
+int is_group_selected(session_context_t *session){
+  return session->gid[0] != '\0';
 }
 
 connection_context_t *init_connection(const char dsip[], const char dsport[]){
@@ -131,6 +140,9 @@ void send_udp_message_size(connection_context_t *context, const char message[], 
 }
 
 void send_tcp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size){
+
+  init_tcp_connection(context);
+
   context->tcp_info->addrlen = sizeof(context->tcp_info->addr);
   size_t size = strlen(message), n;
 
@@ -146,5 +158,7 @@ void send_tcp_message_size(connection_context_t *context, const char message[], 
   response[n] = '\0';
 
   DEBUG_MSG("Response: %s\n", response);
+
+  close_tcp_connection(&context->tcp_info);
 }
 

@@ -178,21 +178,24 @@ void groups(connection_context_t *connection, char *args){
       (void) get_word(&response);
     }
   }else{
-    printf("There are no groups available\n");
+    warning("There are no groups available\n");
   }
 }
 
 void subscribe(connection_context_t *connection, char *args){
+  session_context_t *session = connection->session;
+
+  if (!is_logged(session)){
+    warning("You are not logged in");
+    return;
+  }
+
   char *gid = get_word(&args);
   char *gname = get_word(&args);
 
-  if (strcmp(gid, "00") != 0 && strcmp(gid, "0") != 0)
-    check_gid(gid);
-  int gid_int = atoi(gid);
-
   char buffer[BUFFER_SIZE];
 
-  sprintf(buffer, "%s %2d %s\n", "GSR", gid_int, gname);
+  sprintf(buffer, "%s %s %s %s\n", "GSR", session->uid, gid, gname);
   send_udp_message(connection, buffer, buffer);
 
   char *response = buffer;
@@ -200,39 +203,153 @@ void subscribe(connection_context_t *connection, char *args){
   char *status = get_word(&response);
 
   if (strcmp(status, "OK") == 0){
-
+    success("Subscribed to: [%s] %s", gid, gname);
   }else if (strcmp(status, "NEW") == 0){
-
+    success("New group create and subscribed: [%s] %s", get_word(&response), gname);
   }else if (strcmp(status, "E_USR") == 0){
-
+    throw_error("Invalid UID"); // This shouldn't happen...
   }else if (strcmp(status, "E_GRP") == 0){
-
+    warning("Invalid GID: %s", gid); 
   }else if (strcmp(status, "E_GNAME") == 0){
-
+    warning("Invalid GNAME: %s", gname);
   }else if (strcmp(status, "E_FULL") == 0){
-
+    warning("Server capacity is full, no more groups can be created");
   }else{
-
+    throw_error("Unkown error");
   }
 }
 
 void unsubscribe(connection_context_t *connection, char *args){
+  session_context_t *session = connection->session;
 
+  if (!is_logged(session)){
+    warning("You are not logged in");
+    return;
+  }
+
+  char *gid = get_word(&args);
+  char buffer[BUFFER_SIZE];
+
+  sprintf(buffer, "%s %s %s\n", "GUR", session->uid, gid);
+  send_udp_message(connection, buffer, buffer);
+
+  char *response = buffer;
+
+  EXPECT(get_word(&response), "RGU");
+  char *status = get_word(&response);
+
+  if (strcmp(status, "OK") == 0){
+    success("You are no longer subscribed to group %s", gid);
+  }else if (strcmp(status, "E_USR") == 0){
+    throw_error("Invalid UID"); // This shouldn't happen...
+  }else if (strcmp(status, "E_GRP") == 0){
+    warning("Invalid GID: %s", gid);
+  }else {
+    throw_error("Unkown error");
+  }
 }
 
 void my_groups(connection_context_t *connection, char *args){
+  session_context_t *session = connection->session;
 
+  if (!is_logged(session)){
+    warning("You are not logged in");
+    return;
+  }
+
+  char buffer[RESPONSE_SIZE];
+  sprintf(buffer, "%s %s\n", "GLM", session->uid);
+  send_udp_message_size(connection, buffer, buffer, RESPONSE_SIZE);
+
+  char *response = buffer;
+
+  EXPECT(get_word(&response), "RGM");
+
+  char *N_str = get_word(&response); 
+  
+  if (strcmp(N_str, "E_USR") == 0){
+    throw_error("Invalid UID"); // This shouldn't happen...
+  }else{
+    int N = atoi(N_str);
+
+    if (N != 0){
+      success("Groups you are subscribed to:");
+      char *id, *name;
+      for (int i = 0; i < N; i++){
+        id = get_word(&response);
+        name = get_word(&response);
+        printf("\t[%s] %s\n", id, name);
+        (void) get_word(&response);
+      }
+    }else{
+      warning("You are not subscribed to any group\n");
+    }
+  }
 }
 
 void select_(connection_context_t *connection, char *args){
+  session_context_t *session = connection->session;
 
+  if (!is_logged(session)){
+    warning("You are not logged in");
+    return;
+  }
+
+  select_group(connection->session, get_word(&args));
+  success("Selected: %s", session->gid);
 }
 
 void showgid(connection_context_t *connection, char *args){
+  session_context_t *session = connection->session;
 
+  if (!is_logged(session)){
+    warning("You are not logged in");
+    return;
+  }
+  if (!is_group_selected(session)){
+    warning("No group selected");
+    return;
+  }
+
+  printf("Selected: %s\n", session->gid);
 }
 
 void ulist(connection_context_t *connection, char *args){
+  session_context_t *session = connection->session;
 
+  if (!is_logged(session)){
+    warning("You are not logged in");
+    return;
+  }
+
+  if (!is_group_selected(session)){
+    warning("No group selected");
+    return;
+  }
+
+  char buffer[RESPONSE_SIZE];
+
+  sprintf(buffer, "%s %s\n", "ULS", session->gid);
+  send_tcp_message_size(connection, buffer, buffer, RESPONSE_SIZE);
+
+  char *response = buffer;
+  EXPECT(get_word(&response), "RUL");
+
+  char *status = get_word(&response);
+
+  if (strcmp(status, "OK") == 0){
+    char *gname = get_word(&response);
+    if (!response){
+      warning("There are no users subscribed to %s", gname);
+    }else{
+      success("List of users subscribed to %s:", gname);
+
+      while(response){
+        printf("\t%s\n", get_word(&response));
+      }
+    }
+  }else {
+    warning("Group %s does not exist", session->gid);
+  }
 }
 
