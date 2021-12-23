@@ -1,4 +1,5 @@
 #include "util.h"
+#include <unistd.h>
 #include <string.h>
 
 size_t get_line(char buffer[], FILE *stream){
@@ -25,6 +26,16 @@ char *get_word(char *str[]){
   else  *str = &((*str)[size+1]);
 
   return ret;
+}
+
+size_t get_word_fd(int fd, char str[]){
+  size_t size = str[0] == ' ';
+
+  for (; read(fd, &str[size], 1) != 0; size++) if (str[size] == ' ' || str[size] == '\0' || str[size] == '\n' ) break;
+
+  str[size] = '\0';
+
+  return size;
 }
 
 // FIX THIS LATER
