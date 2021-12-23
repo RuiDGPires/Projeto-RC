@@ -353,3 +353,73 @@ void ulist(connection_context_t *connection, char *args){
   }
 }
 
+void post(connection_context_t *connection, char *args){
+  session_context_t *session = connection->session;
+
+  if (!is_logged(session)){
+    warning("You are not logged in");
+    return;
+  }
+
+  if (!is_group_selected(session)){
+    warning("No group selected");
+    return;
+  }
+
+  char *msg = get_quote(&args);
+  size_t msg_size = strlen(msg);
+
+  // Verificar aspas
+  ASSERT(msg[msg_size - 1] == '"', "Message must be surrounded by double quotes");
+  ASSERT(msg[0] == '"', "Message must be surrounded by double quotes");
+
+  // Remover aspas
+  msg[msg_size-1] = '\0';
+  msg = &msg[1];
+
+  msg_size -= 2;
+  
+  char *file_name = args != NULL ? get_word(&args): NULL;
+
+  char *buffer; 
+
+  if (!file_name){
+    buffer = (char *) malloc(sizeof(char) * (msg_size + BUFFER_SIZE));
+    
+    sprintf(buffer, "PST %s %s %d %s\n", session->uid, session->gid, msg_size, msg);
+  }else {
+    // Abrir ficheiro
+    FILE *file = fopen(file_name, "r");
+    ASSERT(file != NULL, "Unable to open file: %s", file_name);
+
+    size_t file_size = get_file_size(file);
+
+    buffer = (char *) malloc(sizeof(char) * (msg_size + BUFFER_SIZE + file_size));
+
+    sprintf(buffer, "PST %s %s %d %s %s %ld ", session->uid, session->gid, msg_size, msg, file_name, file_size);
+    
+    read_file(file, file_size, &buffer[strlen(buffer)]);
+
+    fclose(file);
+  }
+
+  char response_buffer[BUFFER_SIZE];
+  send_tcp_message(connection, buffer, response_buffer);
+
+  free(buffer);
+
+  char *response = response_buffer;
+  EXPECT(get_word(&response), "RPT");
+
+  char *status = get_word(&response);
+
+  if (strcmp(status, "NOK") == 0){
+    warning("Post failed");
+  }else{
+    success("Post succeeded with MID: %s", status);
+  }
+}
+
+void retrieve(connection_context_t *connection, char *args){
+
+}
