@@ -1,15 +1,15 @@
 CC := gcc
 FLAGS = 
 
-all: client
+all: user
 
-C_FILES := $(wildcard *.c)
+C_FILES := $(wildcard *.c) $(wildcard ../common/*.c)
 
 debug: FLAGS = -D DEBUG
 debug: all
 
-client: $(C_FILES)
+user: $(C_FILES)
 	$(CC) $(FLAGS) -o $@ $^
 
 clean:
-	rm client 
+	rm user 

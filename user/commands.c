@@ -1,6 +1,6 @@
+#include "../common/util.h"
+#include "../common/debug.h"
 #include "commands.h"
-#include "util.h"
-#include "debug.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

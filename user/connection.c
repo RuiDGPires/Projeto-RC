@@ -6,14 +6,13 @@
  *
  *---------------------------------------------*/
 
+#include "../common/debug.h"
 #include "connection.h"
-#include "debug.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
 
 void init_udp_connection(connection_context_t *connection){
   udp_info_t *info = (udp_info_t *) malloc(sizeof(udp_info_t));

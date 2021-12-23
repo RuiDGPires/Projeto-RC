@@ -10,9 +10,9 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "util.h"
-#include "debug.h"
-#include "libio.h"
+#include "../common/util.h"
+#include "../common/debug.h"
+#include "../common/libio.h"
 #include "connection.h"
 #include "commands.h"
 
