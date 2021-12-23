@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <ctype.h>
 
 void check_uid(const char str[]){
@@ -420,6 +421,112 @@ void post(connection_context_t *connection, char *args){
   }
 }
 
+// Isto é o retrieve....
 void retrieve(connection_context_t *connection, char *args){
+  session_context_t *session = connection->session;
 
+  if (!is_logged(session)){
+    warning("You are not logged in");
+    return;
+  }
+
+  if (!is_group_selected(session)){
+    warning("No group selected");
+    return;
+  }
+
+  char *mid = get_word(&args);
+  int mid_int = atoi(mid);
+  char buffer[BUFFER_SIZE];
+  sprintf(buffer, "RTV %s %s %04d\n", session->uid, session->gid, mid_int);
+
+  send_tcp_message_no_answer(connection, buffer);
+
+  get_word_fd(connection->tcp_info->fd, buffer);
+
+  EXPECT(buffer, "RRT");
+
+  get_word_fd(connection->tcp_info->fd, buffer);
+
+  DEBUG_MSG_SECTION("RET");
+  DEBUG_MSG("Reponse: RRT %s\n", buffer);
+  if (strcmp(buffer, "OK") == 0){
+    get_word_fd(connection->tcp_info->fd, buffer);
+    DEBUG_MSG("N = %s\n", buffer);
+    int N = atoi(buffer);
+    success("%d message(s) retrieved:", N);
+
+    get_word_fd(connection->tcp_info->fd, buffer);
+    for (int i = 0; i < N; i ++){
+      // Get message ID
+      char mid[5];
+      strcpy(mid, buffer);
+      mid[4] = '\0';
+
+      // Get user ID
+      get_word_fd(connection->tcp_info->fd, buffer);
+      char uid[6];
+      strcpy(uid, buffer);
+      mid[5] = '\0';
+
+      // Get message size
+      get_word_fd(connection->tcp_info->fd, buffer);
+      int msg_size = atoi(buffer) - 1; 
+
+      // Get message
+      char *msg = (char *) malloc(sizeof(char)*msg_size + 1);
+      read(connection->tcp_info->fd, msg, msg_size);
+      msg[msg_size] = '\0';
+
+      // get rid of trailing ' '
+      (void) read(connection->tcp_info->fd, buffer, 2);
+
+      bool has_file = 0;
+      char file_name[BUFFER_SIZE];
+  
+      // If file appended, get its name
+      get_word_fd(connection->tcp_info->fd, buffer);
+      DEBUG_MSG("%s\n", buffer);
+       
+      if (strcmp(buffer, "/") == 0){
+        has_file = TRUE;
+        FILE *file = NULL;
+
+        get_word_fd(connection->tcp_info->fd, buffer);
+        strcpy(file_name, buffer);
+
+        get_word_fd(connection->tcp_info->fd, buffer);
+        int file_size = atoi(buffer);
+
+        char *file_data = (char *) malloc(sizeof(char)*file_size);
+
+        read(connection->tcp_info->fd, file_data, file_size);
+        // get rid of ' '
+        (void) read(connection->tcp_info->fd, buffer, 1);
+
+        file = fopen(file_name, "w");
+
+        fwrite(file_data, file_size, 1, file);
+
+        fclose(file);
+
+        free(file_data);
+        get_word_fd(connection->tcp_info->fd, buffer);
+      }
+      
+      printf("%s - \"%s\";", mid, msg);
+      if (has_file)
+        printf(" file stored: %s", file_name);
+      printf("\n");
+
+      free(msg);
+    }
+  }else if (strcmp(buffer, "EOF") == 0){
+    warning("There are no messages available");
+  }else{ // NOK
+    throw_error("Unkown error");
+  }
+
+
+  close_tcp_connection(&connection->tcp_info);
 }
