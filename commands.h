@@ -14,5 +14,7 @@ void my_groups(connection_context_t *, char *);
 void select_(connection_context_t *, char *);
 void showgid(connection_context_t *, char *);
 void ulist(connection_context_t *, char *);
+void post(connection_context_t *, char *);
+void retrieve(connection_context_t *, char *);
 
 #endif
