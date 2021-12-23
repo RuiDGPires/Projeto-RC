@@ -95,7 +95,9 @@ int is_logged(session_context_t *session){
 }
 
 void select_group(session_context_t *session, char gid[]){
-  strcpy(session->gid, gid);
+  int gid_int = atoi(gid);
+  
+  sprintf(session->gid, "%02d", gid_int);
 }
 
 int is_group_selected(session_context_t *session){
@@ -149,7 +151,7 @@ void send_tcp_message_size(connection_context_t *context, const char message[], 
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
   ASSERT(n != -1, "Unable connect to server");
   DEBUG_MSG_SECTION("TCP");
-  n = dprintf(context->tcp_info->fd, "%s\n", message);
+  n = dprintf(context->tcp_info->fd, "%s", message);
   ASSERT(n != -1, "Unable to send message");
   DEBUG_MSG("Message sent: %s\n", message);
   DEBUG_MSG("Awaiting response...\n");
@@ -160,5 +162,19 @@ void send_tcp_message_size(connection_context_t *context, const char message[], 
   DEBUG_MSG("Response: %s\n", response);
 
   close_tcp_connection(&context->tcp_info);
+}
+
+void send_tcp_message_no_answer(connection_context_t *context, const char *message){
+  init_tcp_connection(context);
+
+  context->tcp_info->addrlen = sizeof(context->tcp_info->addr);
+  size_t size = strlen(message), n;
+
+  n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
+  ASSERT(n != -1, "Unable connect to server");
+  DEBUG_MSG_SECTION("TCP");
+  n = dprintf(context->tcp_info->fd, "%s", message);
+  ASSERT(n != -1, "Unable to send message");
+  DEBUG_MSG("Message sent: %s\n", message);
 }
 

@@ -74,4 +74,6 @@ void send_udp_message_size(connection_context_t *, const char *, char *, size_t)
 #define send_tcp_message(con, mes, res) send_tcp_message_size(con, mes, res, BUFFER_SIZE)
 void send_tcp_message_size(connection_context_t *, const char *, char *, size_t);
 
+void send_tcp_message_no_answer(connection_context_t *, const char *);
+
 #endif
