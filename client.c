@@ -19,13 +19,8 @@
 #define DEFAULT_DSIP "localhost"
 #define DEFAULT_DSPORT "58065" // 58000 + GN
 
-size_t get_line(char buffer[], FILE *stream){
-  fscanf(stream, "%[^\n]", buffer);
-  (void) getc(stdin);
-  return strlen(buffer);
-}
-
 bool parse_input (connection_context_t *context, char str[]){
+  if (strlen(str) == 0) return 1;
   char *command = get_word(&str);
 
   if (strcmp(command, "reg") == 0){
@@ -55,7 +50,9 @@ bool parse_input (connection_context_t *context, char str[]){
   }else if (strcmp(command, "ulist") == 0 || strcmp(command, "ul") == 0){
     ulist(context, str);
   }else if (strcmp(command, "post") == 0){
+    post(context, str);
   }else if (strcmp(command, "retrieve") == 0 || strcmp(command, "r") == 0){
+    retrieve(context, str);
   }else throw_error("Unkown command");
 
   return 1;
