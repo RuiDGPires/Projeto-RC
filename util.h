@@ -30,6 +30,12 @@ typedef char bool; // smallest size
 #endif
 
 #define BUFFER_SIZE 128
+
+size_t get_line(char *, FILE *);
 char *get_word(char **);
+char *get_quote(char **);
+
+size_t get_file_size(FILE *);
+size_t read_file(FILE *, size_t, char *);
 
 #endif
