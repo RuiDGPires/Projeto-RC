@@ -328,25 +328,30 @@ void ulist(connection_context_t *connection, char *args){
     return;
   }
 
-  char buffer[RESPONSE_SIZE];
-
+  char buffer[BUFFER_SIZE];
   sprintf(buffer, "%s %s\n", "ULS", session->gid);
-  send_tcp_message_size(connection, buffer, buffer, RESPONSE_SIZE);
+  send_tcp_message_no_answer(connection, buffer);
 
-  char *response = buffer;
-  EXPECT(get_word(&response), "RUL");
 
-  char *status = get_word(&response);
+  get_word_fd(connection->tcp_info->fd, buffer);
+  EXPECT(buffer, "RUL");
 
-  if (strcmp(status, "OK") == 0){
-    char *gname = get_word(&response);
-    if (!response){
+  get_word_fd(connection->tcp_info->fd, buffer);
+
+  if (strcmp(buffer, "OK") == 0){
+    get_word_fd(connection->tcp_info->fd, buffer);
+    char gname[BUFFER_SIZE];
+
+    strcpy(gname, buffer);
+
+    if (buffer[0] == '\0'){
       warning("There are no users subscribed to %s", gname);
     }else{
       success("List of users subscribed to %s:", gname);
 
-      while(response){
-        printf("\t%s\n", get_word(&response));
+      while(buffer[0] != '\0'){
+        get_word_fd(connection->tcp_info->fd, buffer);
+        printf("\t%s\n", buffer);
       }
     }
   }else {

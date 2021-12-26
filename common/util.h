@@ -40,3 +40,4 @@ size_t get_file_size(FILE *);
 size_t read_file(FILE *, size_t, char *);
 
 #endif
+

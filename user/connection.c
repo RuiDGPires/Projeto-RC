@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 void init_udp_connection(connection_context_t *connection){
-  udp_info_t *info = (udp_info_t *) malloc(sizeof(udp_info_t));
+  protocol_info_t *info = (protocol_info_t *) malloc(sizeof(protocol_info_t));
 
   info->fd = socket(AF_INET, SOCK_DGRAM, 0);
   ASSERT(info->fd != -1, "Unable to create socket");
@@ -32,7 +32,7 @@ void init_udp_connection(connection_context_t *connection){
   connection->udp_info = info;  
 }
 
-void close_udp_connection(udp_info_t **info){
+void close_udp_connection(protocol_info_t **info){
   freeaddrinfo((*info)->res);
   close((*info)->fd);
   free(*info); 
@@ -40,7 +40,7 @@ void close_udp_connection(udp_info_t **info){
 }
 
 void init_tcp_connection(connection_context_t *connection){
-  tcp_info_t *info = (tcp_info_t *) malloc(sizeof(tcp_info_t));
+  protocol_info_t *info = (protocol_info_t *) malloc(sizeof(protocol_info_t));
 
   info->fd = socket(AF_INET, SOCK_STREAM, 0);
   ASSERT(info->fd != -1, "Unable to create socket");
@@ -57,7 +57,7 @@ void init_tcp_connection(connection_context_t *connection){
   connection->tcp_info = info;  
 }
 
-void close_tcp_connection(tcp_info_t **info){
+void close_tcp_connection(protocol_info_t **info){
   freeaddrinfo((*info)->res);
   close((*info)->fd);
   free(*info); 
