@@ -1,10 +1,12 @@
 #include "connection.h"
+#include "../common/debug.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
 void init_udp(connection_context_t *connection){
-  if((connection->udp_info->fd=socket(AF_INET,SOCK_DGRAM,0))==-1)exit(1);//error
+  connection->udp_info = (udp_info_t *) malloc(sizeof(udp_info_t));
+  if((connection->udp_info->fd=socket(AF_INET,SOCK_DGRAM,0))==-1)exit(1);//error // -> Here
   memset(&connection->udp_info->hints,0,sizeof connection->udp_info->hints);
   connection->udp_info->hints.ai_family=AF_INET;//IPv4
   connection->udp_info->hints.ai_socktype=SOCK_DGRAM;//UDP socket
