@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <string.h>
 
+
+
 void init_udp(connection_context_t *connection){
   connection->udp_info = (udp_info_t *) malloc(sizeof(udp_info_t));
   if((connection->udp_info->fd=socket(AF_INET,SOCK_DGRAM,0))==-1)exit(1);//error
@@ -34,7 +36,7 @@ void init_tcp(connection_context_t *connection){
   if( getaddrinfo(NULL, connection->port,&connection->tcp_info->hints,&connection->tcp_info->res) != 0) /*error*/ exit(1);
   if( bind(connection->tcp_info->fd, connection->tcp_info->res->ai_addrlen) == -1) exit(1); //error
 
-  //listen?
+  if(listen(connection->tcp_info->fd, BACKLOG_NUM) == -1) exit(1); //TODO: Find better number
 }
 
 void close_tcp(connection_context_t *connection){
