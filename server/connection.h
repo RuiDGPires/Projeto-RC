@@ -35,4 +35,7 @@ typedef struct connection_context_s {
 void init_udp(connection_context_t *);
 void close_udp(connection_context_t *);
 
+void init_tcp(connection_context_t *);
+void close_tcp(connection_context_t *);
+
 #endif

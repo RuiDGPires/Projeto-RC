@@ -44,12 +44,15 @@ int main(int argc, char *argv[]){
   parse_args(dsport, &verbose, argc, argv);
 
   connection_context_t *context = (connection_context_t *) malloc(sizeof(connection_context_t));
-  strcpy(context->port, dsport); //CORRECT?
+  strcpy(context->port, dsport);
+
   init_udp(context);
+  //Init tcp?
 
   size_t n;
 
   while (1) {
+    //Improve
     context->udp_info->addrlen = sizeof(context->udp_info->addr);
     n = recvfrom(context->udp_info->fd,buffer, BUFFER_SIZE,0, (struct sockaddr*) &(context->udp_info->addr), &(context->udp_info->addrlen));
     if (n==-1) exit(1);
@@ -58,8 +61,7 @@ int main(int argc, char *argv[]){
     if(sendto(context->udp_info->fd,buffer, n,0, (struct sockaddr*) &(context->udp_info->addr), context->udp_info->addrlen) == -1) exit(1);
   }
 
-  freeaddrinfo(context->udp_info->res);
-  close(context->udp_info->fd);
+  close_udp(context);
   
   return 0;
 }
