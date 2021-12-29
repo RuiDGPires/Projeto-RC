@@ -9,6 +9,7 @@
 
 #include "../common/util.h"
 #define PORT_SIZE 6
+#define BACKLOG_NUM 99
 
 typedef struct {
   int fd;
@@ -34,5 +35,8 @@ typedef struct connection_context_s {
 
 void init_udp(connection_context_t *);
 void close_udp(connection_context_t *);
+
+void init_tcp(connection_context_t *);
+void close_tcp(connection_context_t *);
 
 #endif
