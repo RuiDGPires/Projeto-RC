@@ -1,6 +1,7 @@
 #include "../common/debug.h"
 #include "../common/util.h"
 #include "connection.h"
+#include "fileManagement.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -50,6 +51,8 @@ int main(int argc, char *argv[]){
   init_udp(context);
   //Init tcp?
 
+  init_fileSystem(".");
+
   size_t n;
 
   while (1) {
@@ -63,6 +66,7 @@ int main(int argc, char *argv[]){
   }
 
   close_udp(context);
+  close_fileSystem();
   
   return 0;
 }

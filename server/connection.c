@@ -7,6 +7,8 @@
 
 
 void init_udp(connection_context_t *connection){
+  DEBUG_MSG("Init UDP Connection\n");
+
   connection->udp_info = (udp_info_t *) malloc(sizeof(udp_info_t));
   if((connection->udp_info->fd=socket(AF_INET,SOCK_DGRAM,0))==-1)exit(1);//error
   memset(&connection->udp_info->hints,0,sizeof connection->udp_info->hints);
@@ -25,6 +27,8 @@ void close_udp(connection_context_t *connection){
 }
 
 void init_tcp(connection_context_t *connection){
+  DEBUG_MSG("Init TCP Connection\n");
+  
   connection->tcp_info = (tcp_info_t *) malloc(sizeof(tcp_info_t));
 
   if((connection->tcp_info->fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) exit(1); //error
