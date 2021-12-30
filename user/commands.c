@@ -508,18 +508,22 @@ void retrieve(connection_context_t *connection, char *args){
 
         char *file_data = (char *) malloc(sizeof(char)*file_size);
 
-        size_t read_size =  read(connection->tcp_info->fd, file_data, file_size);
+        size_t total_read_size = 0;
+
+        while(total_read_size != file_size){
+          total_read_size += read(connection->tcp_info->fd, &file_data[total_read_size], file_size-total_read_size);
+        }
 
         DEBUG_MSG("File size: %d\n", file_size);
-        DEBUG_MSG("Read size %d\n", read_size);
+        DEBUG_MSG("Read size %d\n", total_read_size);
 
-        ASSERT(file_size == read_size, "File sizes don't match");
+        ASSERT(file_size == total_read_size, "File sizes don't match");
         // get rid of ' '
         (void) read(connection->tcp_info->fd, buffer, 1);
 
         file = fopen(file_name, "wb");
 
-        fwrite(file_data, file_size, 1, file);
+        fwrite(file_data, 1, file_size, file);
 
         ASSERT(file_size == get_file_size(file), "File sizes don't match");
         fclose(file);

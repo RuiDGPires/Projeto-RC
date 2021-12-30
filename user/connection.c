@@ -173,8 +173,11 @@ void send_tcp_message_sending_size(connection_context_t *context, const char mes
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
   ASSERT(n != -1, "Unable connect to server");
   DEBUG_MSG_SECTION("TCP");
-  n = write(context->tcp_info->fd, message, size);
-  ASSERT(n != -1, "Unable to send message");
+
+  size_t total_written_size = 0;
+  while(total_written_size != size)
+    total_written_size += write(context->tcp_info->fd, &message[total_written_size], size-total_written_size);
+
   DEBUG_MSG("Message sent: %s\n", message);
   DEBUG_MSG("Awaiting response...\n");
   n=read(context->tcp_info->fd, response, BUFFER_SIZE);
