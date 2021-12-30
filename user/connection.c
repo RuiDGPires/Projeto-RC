@@ -163,6 +163,29 @@ void send_tcp_message_size(connection_context_t *context, const char message[], 
   close_tcp_connection(&context->tcp_info);
 }
 
+void send_tcp_message_sending_size(connection_context_t *context, const char message[], char response[], size_t size){
+
+  init_tcp_connection(context);
+
+  context->tcp_info->addrlen = sizeof(context->tcp_info->addr);
+  size_t n;
+
+  n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
+  ASSERT(n != -1, "Unable connect to server");
+  DEBUG_MSG_SECTION("TCP");
+  n = write(context->tcp_info->fd, message, size);
+  ASSERT(n != -1, "Unable to send message");
+  DEBUG_MSG("Message sent: %s\n", message);
+  DEBUG_MSG("Awaiting response...\n");
+  n=read(context->tcp_info->fd, response, BUFFER_SIZE);
+  ASSERT(n != -1, "Unable to receive message");
+  response[n] = '\0';
+
+  DEBUG_MSG("Response: %s\n", response);
+
+  close_tcp_connection(&context->tcp_info);
+}
+
 void send_tcp_message_no_answer(connection_context_t *context, const char *message){
   init_tcp_connection(context);
 

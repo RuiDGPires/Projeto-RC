@@ -389,13 +389,15 @@ void post(connection_context_t *connection, char *args){
 
   char *buffer; 
 
+  size_t sending_msg_size = 0;
   if (!file_name){
     buffer = (char *) malloc(sizeof(char) * (msg_size + BUFFER_SIZE));
     
     sprintf(buffer, "PST %s %s %d %s\n", session->uid, session->gid, msg_size, msg);
+    sending_msg_size = strlen(buffer);
   }else {
     // Abrir ficheiro
-    FILE *file = fopen(file_name, "r");
+    FILE *file = fopen(file_name, "rb");
     ASSERT(file != NULL, "Unable to open file: %s", file_name);
 
     size_t file_size = get_file_size(file);
@@ -404,13 +406,14 @@ void post(connection_context_t *connection, char *args){
 
     sprintf(buffer, "PST %s %s %d %s %s %ld ", session->uid, session->gid, msg_size, msg, file_name, file_size);
     
+    sending_msg_size = strlen(buffer) + file_size + 1;
     read_file(file, file_size, &buffer[strlen(buffer)]);
 
     fclose(file);
   }
 
   char response_buffer[BUFFER_SIZE];
-  send_tcp_message(connection, buffer, response_buffer);
+  send_tcp_message_sending_size(connection, buffer, response_buffer, sending_msg_size);
 
   free(buffer);
 
@@ -505,14 +508,20 @@ void retrieve(connection_context_t *connection, char *args){
 
         char *file_data = (char *) malloc(sizeof(char)*file_size);
 
-        read(connection->tcp_info->fd, file_data, file_size);
+        size_t read_size =  read(connection->tcp_info->fd, file_data, file_size);
+
+        DEBUG_MSG("File size: %d\n", file_size);
+        DEBUG_MSG("Read size %d\n", read_size);
+
+        ASSERT(file_size == read_size, "File sizes don't match");
         // get rid of ' '
         (void) read(connection->tcp_info->fd, buffer, 1);
 
-        file = fopen(file_name, "w");
+        file = fopen(file_name, "wb");
 
         fwrite(file_data, file_size, 1, file);
 
+        ASSERT(file_size == get_file_size(file), "File sizes don't match");
         fclose(file);
 
         free(file_data);
@@ -531,7 +540,6 @@ void retrieve(connection_context_t *connection, char *args){
   }else{ // NOK
     throw_error("Unkown error");
   }
-
 
   close_tcp_connection(&connection->tcp_info);
 }

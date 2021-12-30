@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #define CLEAR(var) var[0] = '\0'
 #define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)
