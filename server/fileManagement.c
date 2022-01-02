@@ -85,4 +85,15 @@ void close_directory(char *path){
     }
 }
 
+void create_file(char* name, char *path){
+
+    DEBUG_MSG_SECTION("FSYS");
+
+    char *file_path = (char*) malloc(sizeof(char)*(sizeof(path)+sizeof(name)));
+    sprintf(file_path,"%s/%s", server_path, name);
+    //create file?????????????????????????????? help
+    DEBUG_MSG("%s File Created (%s)\n", name, file_path);
+
+    free(file_path);
+}
 
