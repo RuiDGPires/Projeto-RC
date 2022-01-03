@@ -1,5 +1,5 @@
-#ifndef FILEMANAGEMENT_H__
-#define FILEMANAGEMENT_H__
+#ifndef FILE_MANAGEMENT_H__
+#define FILE_MANAGEMENT_H__
 
 #include <unistd.h>
 #include <sys/stat.h>
