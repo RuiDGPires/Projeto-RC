@@ -8,11 +8,11 @@
 #include "../common/util.h"
 #include "../common/debug.h"
 
-void init_fileSystem(char *);
-void close_fileSystem();
+char *create_filesystem(char *);
+void delete_filesystem();
 
 void create_directory(char *, char *);
-void close_directory(char *);
+void delete_directory(char *);
 
 
 #endif
