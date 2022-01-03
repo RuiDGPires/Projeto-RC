@@ -96,63 +96,111 @@ void reg(connection_context_t *connection, char *args, char *fs){
     sprintf(buffer, "RRG OK\n");
   }
 
-  send_udp_message(connection, buffer, 7);
+  send_udp_message(connection, buffer);
 
   free(user_path);
 }
 
 void unregister(connection_context_t *connection, char *args, char *fs){
-  char *name = get_word(&args);
-  char *pass= get_word(&args);
+    char *name = get_word(&args);
+    char *pass= get_word(&args);
 
-  char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
 
-  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 1);
+    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 1);
 
-  sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
 
-  if (check_credencials(name, pass, fs) == 0){
+    if (check_credencials(name, pass, fs) == 0){
     delete_directory(user_path);
     sprintf(buffer, "RUN OK\n");
-  }else{
+    }else{
     sprintf(buffer, "RUN NOK\n");
-  }
+    }
 
-  send_udp_message(connection, buffer, 7);
-  free(user_path);
+    send_udp_message(connection, buffer);
+    free(user_path);
 }
 
 void login_(connection_context_t *connection, char *args, char *fs){
-  char *name = get_word(&args);
-  char *pass= get_word(&args);
+    char *name = get_word(&args);
+    char *pass= get_word(&args);
 
-  char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
 
-  if (check_credencials(name, pass, fs) == 0){
+    if (check_credencials(name, pass, fs) == 0){
     sprintf(buffer, "RLO OK\n");
-  }else{
+    }else{
     sprintf(buffer, "RLO NOK\n");
-  }
+    }
 
-  send_udp_message(connection, buffer, 7);
+    send_udp_message(connection, buffer);
 }
 
 void logout_(connection_context_t *connection, char *args, char *fs){
-  char *name = get_word(&args);
-  char *pass= get_word(&args);
+    char *name = get_word(&args);
+    char *pass= get_word(&args);
 
-  char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE];
 
-  if (check_credencials(name, pass, fs) == 0){
+    if (check_credencials(name, pass, fs) == 0){
     sprintf(buffer, "ROU OK\n");
-  }else{
+    }else{
     sprintf(buffer, "ROU NOK\n");
-  }
+    }
 
-  send_udp_message(connection, buffer, 7);
+    send_udp_message(connection, buffer);
 }
 
-void groups(connection_context_t *, char *, char *){}
+void groups(connection_context_t *connection, char *args, char *fs){
+    (void) args;
+
+    char *groups_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 3));
+    sprintf(groups_path, "%s/%s/", fs, SERVER_GROUPS_NAME);
+
+    sll_link_t group_list = list_subdirectories(groups_path);
+
+    char n_str[BUFFER_SIZE];
+
+    sprintf(n_str, "%d", sll_size(group_list));
+
+    char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + sll_size(group_list)*33));
+
+    sprintf(msg_buffer, "RGL %s", n_str);
+
+    FOR_ITEM_IN_LIST(group, group_list)
+        char *top = &msg_buffer[strlen(msg_buffer)];
+
+        char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 4));
+
+        sprintf(group_msgs_path, "%s/%s/", groups_path, group);
+        sll_link_t msg_list = list_subdirectories(group_msgs_path);
+
+
+        char *name_path = (char *) malloc(sizeof(char) * (strlen(group_msgs_path) + strlen("name.txt") + 3));
+        sprintf(name_path, "%s/%s", group_msgs_path, "name.txt");
+        FILE *file = fopen(name_path, "r");
+        free(name_path);
+
+        char group_name[25];
+
+        fscanf(file, "%s", group_name);
+        fclose(file);
+
+        sprintf(top, " %s %s %04d", group, group_name, sll_size(msg_list));
+
+        sll_destroy(&msg_list);
+        free(group_msgs_path);
+    
+    END_FIIL()
+
+    send_udp_message(connection, msg_buffer);
+
+    free(msg_buffer);
+
+    sll_destroy(&group_list);
+}
+
 void subscribe(connection_context_t *, char *, char *){}
 void unsubscribe(connection_context_t *, char *, char *){}
 void my_groups(connection_context_t *, char *, char *){}

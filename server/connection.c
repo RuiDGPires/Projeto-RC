@@ -59,7 +59,7 @@ void wait_udp_message(connection_context_t *connection, char *buffer, size_t siz
   DEBUG_MSG("Message received!:\n\t%s\n", buffer);
 }
 
-void send_udp_message(connection_context_t *connection, char *buffer, size_t size){
+void send_udp_message_size(connection_context_t *connection, char *buffer, size_t size){
   connection->udp_info->addrlen = sizeof(connection->udp_info->addr);
 
   ASSERT(sendto(connection->udp_info->fd,buffer, size,0, (struct sockaddr*) &(connection->udp_info->addr), connection->udp_info->addrlen) != -1, "Error sending message");
