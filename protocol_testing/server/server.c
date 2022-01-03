@@ -54,13 +54,14 @@ int main(int argc, char *argv[]){
 
   if(fork() == 0){
     while (1) {
-      wait_upd_message(context, buffer_udp, BUFFER_SIZE);
+      wait_udp_message(context, buffer_udp, BUFFER_SIZE);
       send_udp_message(context, buffer_udp, BUFFER_SIZE);
     }
   }
   else{
     while (1) {
-      //wait tcp message
+      int nfd = wait_tcp_message(context, buffer_tcp, BUFFER_SIZE);
+      send_udp_message(context, buffer_tcp, BUFFER_SIZE, nfd);
     }
   }
 
