@@ -79,7 +79,7 @@ int main(int argc, char *argv[]){
   init_udp(context);
   //Init tcp?
 
-  init_fileSystem(".");
+  char *fs = create_filesystem(".");
 
   size_t n;
 
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]){
   }
 
   close_udp(context);
-  close_fileSystem();
+  destroy_filesystem(&fs);
   
   return 0;
 }

@@ -29,10 +29,10 @@ char *init_filesystem(char *path){
 }
 
 /* Deletes everything */
-void delete_filesystem(char **path){
+void destroy_filesystem(char **path){
     DEBUG_MSG_SECTION("FSYS");
     
-    close_directory(*path);
+    delete_directory(*path);
     free(*path);
     *path = NULL;
 }
@@ -48,8 +48,8 @@ void create_directory(char *path, char *name){
     free(dir_path);
 }
 
-/* Closes a directory recursively */
-void close_directory(char *path){
+/* Deletes a directory recursively */
+void delete_directory(char *path){
     DEBUG_MSG_SECTION("FSYS");
 
     DIR *d;
@@ -66,7 +66,7 @@ void close_directory(char *path){
                 //DIR
                 file_path = (char*) malloc (sizeof(char) * (sizeof(path) + sizeof(dir->d_name)));
                 sprintf(file_path, "%s/%s", path, dir->d_name);
-                close_directory(file_path);
+                delete_directory(file_path);
 
                 free(file_path);
                 continue;

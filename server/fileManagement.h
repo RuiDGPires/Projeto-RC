@@ -9,7 +9,7 @@
 #include "../common/debug.h"
 
 char *create_filesystem(char *);
-void delete_filesystem();
+void destroy_filesystem(char **);
 
 void create_directory(char *, char *);
 void delete_directory(char *);
