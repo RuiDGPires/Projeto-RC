@@ -40,5 +40,8 @@ void init_tcp(connection_context_t *);
 void close_tcp(connection_context_t *);
 
 void wait_message(connection_context_t *, char *, size_t);
-void send_udp_message(connection_context_t *, char *, size_t);
+void send_udp_message_size(connection_context_t *, char *, size_t);
+
+#define send_udp_message(con, buffer) send_udp_message_size(con, buffer, strlen(buffer))
+
 #endif

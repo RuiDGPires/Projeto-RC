@@ -109,15 +109,8 @@ sll_link_t list_subdirectories(char *path){
         while((dir = readdir(d)) != NULL){
             if(dir->d_name[0] == '.') continue;
 
-            if (dir->d_type == DT_DIR ){
-                //DIR
-                subdir_path = (char*) malloc (sizeof(char) * (strlen(path) + strlen(dir->d_name)));
-                sprintf(subdir_path, "%s/%s", path, dir->d_name);
-
-                sll_append(&dir_list, subdir_path);
-                free(subdir_path);
-                continue;
-            }
+            if (dir->d_type == DT_DIR )
+                sll_append(&dir_list, dir->d_name);
         }
     }
 

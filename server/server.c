@@ -81,15 +81,12 @@ int main(int argc, char *argv[]){
 
   char *fs = create_filesystem(".");
 
-  size_t n;
-
   while (1) {
     wait_message(context, buffer, BUFFER_SIZE);
     parse_message(context, buffer, fs);
   }
 
   close_udp(context);
-  destroy_filesystem(&fs);
   
   return 0;
 }
