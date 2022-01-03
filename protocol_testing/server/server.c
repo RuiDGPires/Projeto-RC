@@ -74,7 +74,7 @@ int main(int argc, char *argv[]){
 
     nready = select(maxfd1, &rset, NULL, NULL, NULL);
 
-    if(fork() == 0){
+    if(fork() == 0){ // Fork for each if instead of one for both?
       if(FD_ISSET(context->udp_info->fd, &rset)){
         wait_udp_message(context, buffer_udp, BUFFER_SIZE);
         send_udp_message(context, buffer_udp);
