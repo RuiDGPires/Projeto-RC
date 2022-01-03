@@ -84,8 +84,8 @@ int main(int argc, char *argv[]){
   size_t n;
 
   while (1) {
-    wait_message(context, buffer, BUFFER_SIZE);
-    parse_message(context, buffer, fs);
+    wait_udp_message(context, buffer, BUFFER_SIZE);
+    parse_message(context, buffer);
   }
 
   close_udp(context);

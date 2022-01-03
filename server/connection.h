@@ -39,6 +39,9 @@ void close_udp(connection_context_t *);
 void init_tcp(connection_context_t *);
 void close_tcp(connection_context_t *);
 
-void wait_message(connection_context_t *, char *, size_t);
+void wait_udp_message(connection_context_t *, char *, size_t);
 void send_udp_message(connection_context_t *, char *, size_t);
+
+int wait_tcp_message(connection_context_t *, char *,size_t);
+void send_tcp_message(connection_context_t *, char *, size_t, int);
 #endif
