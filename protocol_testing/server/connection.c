@@ -1,5 +1,5 @@
 #include "connection.h"
-#include "../common/debug.h"
+#include "../../common/debug.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -52,25 +52,27 @@ void close_tcp(connection_context_t *connection){
 
 void wait_udp_message(connection_context_t *connection, char *buffer, size_t size){
   DEBUG_MSG_SECTION("UDP");
-  DEBUG_MSG("Waiting message...\n");
+  DEBUG_MSG("Waiting message... %d\n", getpid());
+  //sleep(5);
   connection->udp_info->addrlen = sizeof(connection->udp_info->addr);
   ASSERT(recvfrom(connection->udp_info->fd,buffer, size, 0, (struct sockaddr*) &(connection->udp_info->addr), &(connection->udp_info->addrlen)) != -1, "Error receiving message");
 
-  DEBUG_MSG("Message received!:\n\t%s\n", buffer);
+  DEBUG_MSG("Message received! %d:\n\t%s\n", getpid(), buffer);
   sleep(5);
 }
 
 void send_udp_message_size(connection_context_t *connection, char *buffer, size_t size){
   connection->udp_info->addrlen = sizeof(connection->udp_info->addr);
-
+  sleep(5);
   ASSERT(sendto(connection->udp_info->fd,buffer, size,0, (struct sockaddr*) &(connection->udp_info->addr), connection->udp_info->addrlen) != -1, "Error sending message");
-  
-  DEBUG_MSG("Message sent \n\t%s\n", buffer);
+
+  DEBUG_MSG("Message sent! %d:\n\t%s\n", getpid(), buffer);
+  sleep(5);
 }
 
 int wait_tcp_message(connection_context_t *connection, char *buffer, size_t size){
   DEBUG_MSG_SECTION("TCP");
-  DEBUG_MSG("Waiting message...\n");
+  DEBUG_MSG("Waiting message... %d\n", getpid());
   connection->tcp_info->addrlen = sizeof(connection->tcp_info->addr);
 
   int newfd;
@@ -79,7 +81,7 @@ int wait_tcp_message(connection_context_t *connection, char *buffer, size_t size
   ASSERT(newfd != -1, "Error acceptiong connection");
   ASSERT(read(newfd,buffer,size) != -1, "Error receiving message");
 
-  DEBUG_MSG("Message received!: \n\t%s\n", buffer);
+  DEBUG_MSG("Message received! %d: \n\t%s\n", getpid(), buffer);
   sleep(5);
   return newfd;
 }
@@ -89,7 +91,7 @@ void send_tcp_message(connection_context_t *connection, char *buffer, size_t siz
 
   ASSERT(write(newfd, buffer, size) != -1, "Error while sending message");
 
-  DEBUG_MSG("Message sent \n\t%s\n", buffer);
+  DEBUG_MSG("Message sent! %d:\n\t%s\n", getpid(), buffer);
 
   close(newfd);
 }

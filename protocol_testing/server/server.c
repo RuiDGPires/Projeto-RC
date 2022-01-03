@@ -1,6 +1,6 @@
 #include "../../common/debug.h"
 #include "../../common/util.h"
-#include "../../server/connection.h"
+#include "connection.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -65,28 +65,33 @@ int main(int argc, char *argv[]){
 
   maxfd1 = max(context->tcp_info->fd, context->udp_info->fd) + 1;
 
+  FD_SET(context->udp_info->fd, &rset);
+  FD_SET(context->tcp_info->fd, &rset);
 
   //SELECT
   while(1){
 
-    FD_SET(context->tcp_info->fd, &rset);
     FD_SET(context->udp_info->fd, &rset);
+    FD_SET(context->tcp_info->fd, &rset);
 
+    DEBUG_MSG("Waiting Select... %d\n", getpid());
     nready = select(maxfd1, &rset, NULL, NULL, NULL);
+    DEBUG_MSG("... Select Completed %d\n", getpid());
 
-    if(fork() == 0){ // Fork for each if instead of one for both?
-      if(FD_ISSET(context->udp_info->fd, &rset)){
+    if(FD_ISSET(context->udp_info->fd, &rset)){
         wait_udp_message(context, buffer_udp, BUFFER_SIZE);
-        send_udp_message(context, buffer_udp);
-      }
-      else{
-        if(FD_ISSET(context->tcp_info->fd, &rset)){
-          //Close listen fd?
-          int nfd = wait_tcp_message(context, buffer_tcp, BUFFER_SIZE);
-          send_tcp_message(context, buffer_tcp, BUFFER_SIZE, nfd);
+        if(fork() == 0){
+          send_udp_message(context, buffer_udp);
+          DEBUG_MSG("Close Fork %d\n", getpid());
+          exit(0);
         }
+    }
+    else{
+      if(FD_ISSET(context->tcp_info->fd, &rset)){
+        //Close listen fd?
+        int nfd = wait_tcp_message(context, buffer_tcp, BUFFER_SIZE);
+        send_tcp_message(context, buffer_tcp, BUFFER_SIZE, nfd);
       }
-      exit(0);
     }
   }
 
