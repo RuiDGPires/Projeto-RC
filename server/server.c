@@ -1,6 +1,7 @@
 #include "../common/debug.h"
 #include "../common/util.h"
 #include "connection.h"
+#include "commands.h"
 #include "fileManagement.h"
 
 #include <string.h>
@@ -12,6 +13,33 @@
 #define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)
 #define DEFAULT_DSPORT "58065" // 58000 + GN
 
+void parse_message(connection_context_t *connection, char *msg){
+  char *command = get_word(&msg);
+
+  if (strcmp(command, "REG") == 0){
+    reg(connection, msg);
+  }else if (strcmp(command, "UNR") == 0){
+    unregister(connection, msg);
+  }else if (strcmp(command, "LOG") == 0){
+    login_(connection, msg);
+  }else if (strcmp(command, "OUT") == 0){
+    logout_(connection, msg);
+  }else if (strcmp(command, "GLS") == 0){
+    groups(connection, msg);
+  }else if (strcmp(command, "GSR") == 0){
+    subscribe(connection, msg);
+  }else if (strcmp(command, "GUR") == 0){
+    unsubscribe(connection, msg);
+  }else if (strcmp(command, "GLM") == 0){
+    my_groups(connection, msg);
+  }else if (strcmp(command, "ULS") == 0){
+    ulist(connection, msg);
+  }else if (strcmp(command, "PST") == 0){
+    post(connection, msg);
+  }else if (strcmp(command, "RTV") == 0){
+    retrieve(connection, msg);
+  }else throw_error("Unkown command");
+}
 
 void parse_args(char *dsport, bool *verbose, int argc, char *argv[]){
   DEBUG_MSG_SECTION("ARGS");
@@ -56,13 +84,8 @@ int main(int argc, char *argv[]){
   size_t n;
 
   while (1) {
-    //Improve
-    context->udp_info->addrlen = sizeof(context->udp_info->addr);
-    n = recvfrom(context->udp_info->fd,buffer, BUFFER_SIZE,0, (struct sockaddr*) &(context->udp_info->addr), &(context->udp_info->addrlen));
-    if (n==-1) exit(1);
-    write(1, "received: ", 10);
-    write(1, buffer, n);
-    if(sendto(context->udp_info->fd,buffer, n,0, (struct sockaddr*) &(context->udp_info->addr), context->udp_info->addrlen) == -1) exit(1);
+    wait_message(context, buffer, BUFFER_SIZE);
+    parse_message(context, buffer);
   }
 
   close_udp(context);
