@@ -39,6 +39,6 @@ void check_gname(const char str[]){
     if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') throw_error("Invalid group name chars");
 }
 
-void reg(connection_context_t *connection, char *args){
+void reg(connection_context_t *connection, char *args, char *fs){
   send_udp_message(connection, "RRG OK\n", 7);
 }

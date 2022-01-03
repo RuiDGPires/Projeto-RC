@@ -13,31 +13,31 @@
 #define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)
 #define DEFAULT_DSPORT "58065" // 58000 + GN
 
-void parse_message(connection_context_t *connection, char *msg){
+void parse_message(connection_context_t *connection, char *msg, char *fs){
   char *command = get_word(&msg);
 
   if (strcmp(command, "REG") == 0){
-    reg(connection, msg);
+    reg(connection, msg, fs);
   }else if (strcmp(command, "UNR") == 0){
-    unregister(connection, msg);
+    unregister(connection, msg, fs);
   }else if (strcmp(command, "LOG") == 0){
-    login_(connection, msg);
+    login_(connection, msg, fs);
   }else if (strcmp(command, "OUT") == 0){
-    logout_(connection, msg);
+    logout_(connection, msg, fs);
   }else if (strcmp(command, "GLS") == 0){
-    groups(connection, msg);
+    groups(connection, msg, fs);
   }else if (strcmp(command, "GSR") == 0){
-    subscribe(connection, msg);
+    subscribe(connection, msg, fs);
   }else if (strcmp(command, "GUR") == 0){
-    unsubscribe(connection, msg);
+    unsubscribe(connection, msg, fs);
   }else if (strcmp(command, "GLM") == 0){
-    my_groups(connection, msg);
+    my_groups(connection, msg, fs);
   }else if (strcmp(command, "ULS") == 0){
-    ulist(connection, msg);
+    ulist(connection, msg, fs);
   }else if (strcmp(command, "PST") == 0){
-    post(connection, msg);
+    post(connection, msg, fs);
   }else if (strcmp(command, "RTV") == 0){
-    retrieve(connection, msg);
+    retrieve(connection, msg, fs);
   }else throw_error("Unkown command");
 }
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
 
   while (1) {
     wait_message(context, buffer, BUFFER_SIZE);
-    parse_message(context, buffer);
+    parse_message(context, buffer, fs);
   }
 
   close_udp(context);
