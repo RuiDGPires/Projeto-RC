@@ -33,6 +33,14 @@ void parse_args(char *dsport, bool *verbose, int argc, char *argv[]){
   DEBUG_MSG("dsport set to: %s\n", dsport);
 }
 
+int max(int x, int y)
+{
+    if (x > y)
+        return x;
+    else
+        return y;
+}
+
 int main(int argc, char *argv[]){
   DEBUG_MSG_SECTION("MAIN");
 
@@ -42,6 +50,9 @@ int main(int argc, char *argv[]){
   char buffer_udp[BUFFER_SIZE];
   char buffer_tcp[BUFFER_SIZE];
 
+  int maxfd1, nready;
+  fd_set rset;
+
   parse_args(dsport, &verbose, argc, argv);
 
   connection_context_t *context = (connection_context_t *) malloc(sizeof(connection_context_t));
@@ -50,18 +61,32 @@ int main(int argc, char *argv[]){
   init_udp(context);
   init_tcp(context);
 
-  //SELECT
+  FD_ZERO(&rset);
 
-  if(fork() == 0){
-    while (1) {
-      wait_udp_message(context, buffer_udp, BUFFER_SIZE);
-      send_udp_message(context, buffer_udp, BUFFER_SIZE);
-    }
-  }
-  else{
-    while (1) {
-      int nfd = wait_tcp_message(context, buffer_tcp, BUFFER_SIZE);
-      send_udp_message(context, buffer_tcp, BUFFER_SIZE, nfd);
+  maxfd1 = max(context->tcp_info->fd, context->udp_info->fd) + 1;
+
+
+  //SELECT
+  while(1){
+
+    FD_SET(context->tcp_info->fd, &rset);
+    FD_SET(context->udp_info->fd, &rset);
+
+    nready = select(maxfd1, &rset, NULL, NULL, NULL);
+
+    if(fork() == 0){
+      if(FD_ISSET(context->udp_info->fd, &rset)){
+        wait_udp_message(context, buffer_udp, BUFFER_SIZE);
+        send_udp_message(context, buffer_udp);
+      }
+      else{
+        if(FD_ISSET(context->tcp_info->fd, &rset)){
+          //Close listen fd?
+          int nfd = wait_tcp_message(context, buffer_tcp, BUFFER_SIZE);
+          send_tcp_message(context, buffer_tcp, BUFFER_SIZE, nfd);
+        }
+      }
+      exit(0);
     }
   }
 
