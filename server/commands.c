@@ -1,6 +1,7 @@
 #include "../common/util.h"
 #include "../common/debug.h"
 #include "commands.h"
+#include "file_management.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,6 +40,122 @@ void check_gname(const char str[]){
     if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') throw_error("Invalid group name chars");
 }
 
-void reg(connection_context_t *connection, char *args, char *fs){
-  send_udp_message(connection, "RRG OK\n", 7);
+// returns:
+//  0 if everything is correct
+//  1 if user name does not exist
+//  2 if password is wrong
+int check_credencials(const char name[], const char pass[], const char fs[]){
+  int ret = 0;
+
+  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 1);
+  sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+
+  if (!(directory_exists(user_path))){
+    ret = 1;
+  }else{
+    char *pass_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + strlen("pass.txt") + 1);
+
+    sprintf(pass_path, "%s/%s/%s/pass.txt", fs, SERVER_USERS_NAME, name);
+
+    FILE *file = fopen(pass_path, "r");
+
+    char user_pass[9];
+    fscanf(file, "%s", user_pass);
+    fclose(file);
+
+    DEBUG_MSG_SECTION("UNR");
+
+    if (strcmp(user_pass, pass) == 0){
+      ret = 0;
+    }else{
+      ret = 2;
+    }
+
+    free(pass_path);
+  }
+
+  free(user_path);
+  return ret;
 }
+
+void reg(connection_context_t *connection, char *args, char *fs){
+  char *name = get_word(&args);
+  char *pass= get_word(&args);
+
+  char buffer[BUFFER_SIZE];
+
+  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 1);
+
+  sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+
+  if (directory_exists(user_path)){
+    sprintf(buffer, "RRG DUP\n");
+  }else{
+    create_directory_abs(user_path);
+    create_file(user_path, "pass.txt", pass);
+    sprintf(buffer, "RRG OK\n");
+  }
+
+  send_udp_message(connection, buffer, 7);
+
+  free(user_path);
+}
+
+void unregister(connection_context_t *connection, char *args, char *fs){
+  char *name = get_word(&args);
+  char *pass= get_word(&args);
+
+  char buffer[BUFFER_SIZE];
+
+  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 1);
+
+  sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+
+  if (check_credencials(name, pass, fs) == 0){
+    delete_directory(user_path);
+    sprintf(buffer, "RUN OK\n");
+  }else{
+    sprintf(buffer, "RUN NOK\n");
+  }
+
+  send_udp_message(connection, buffer, 7);
+  free(user_path);
+}
+
+void login_(connection_context_t *connection, char *args, char *fs){
+  char *name = get_word(&args);
+  char *pass= get_word(&args);
+
+  char buffer[BUFFER_SIZE];
+
+  if (check_credencials(name, pass, fs) == 0){
+    sprintf(buffer, "RLO OK\n");
+  }else{
+    sprintf(buffer, "RLO NOK\n");
+  }
+
+  send_udp_message(connection, buffer, 7);
+}
+
+void logout_(connection_context_t *connection, char *args, char *fs){
+  char *name = get_word(&args);
+  char *pass= get_word(&args);
+
+  char buffer[BUFFER_SIZE];
+
+  if (check_credencials(name, pass, fs) == 0){
+    sprintf(buffer, "ROU OK\n");
+  }else{
+    sprintf(buffer, "ROU NOK\n");
+  }
+
+  send_udp_message(connection, buffer, 7);
+}
+
+void groups(connection_context_t *, char *, char *){}
+void subscribe(connection_context_t *, char *, char *){}
+void unsubscribe(connection_context_t *, char *, char *){}
+void my_groups(connection_context_t *, char *, char *){}
+void ulist(connection_context_t *, char *, char *){}
+void post(connection_context_t *, char *, char *){}
+void retrieve(connection_context_t *, char *, char *){}
