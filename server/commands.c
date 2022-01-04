@@ -201,8 +201,59 @@ void groups(connection_context_t *connection, char *args, char *fs){
     sll_destroy(&group_list);
 }
 
-void subscribe(connection_context_t *, char *, char *){}
-void unsubscribe(connection_context_t *, char *, char *){}
+void subscribe(connection_context_t *connection, char *args, char *fs){
+    char *uid = get_word(&args);
+    char *gid = get_word(&args);
+    char *gname = get_word(&args);
+
+    char msg_buffer[BUFFER_SIZE];
+
+    char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
+    sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+    if (!(directory_exists(user_dir)))
+        sprintf(msg_buffer, "RGS E_USR\n");
+    else{
+        char *groups_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 3));
+        sprintf(groups_dir, "%s/%s", fs, SERVER_GROUPS_NAME);
+
+        char *group_dir = malloc(sizeof(char) * (strlen(groups_dir) + 4));
+        if (strcmp(gid, "00") == 0){ // Create new group
+            sll_link_t group_list = list_subdirectories(groups_dir);
+            int new_id = sll_size(group_list) + 1;
+
+            sprintf(group_dir, "%s/%02d", groups_dir, new_id);
+
+            create_directory_abs(groups_dir);
+            create_directory(groups_dir, "MSG");
+            create_file(groups_dir, "name.txt", gname);
+
+            sll_destroy(&group_list);
+            sprintf(gid, "%02d", new_id);
+        }
+
+        sprintf(group_dir, "%s/%s", groups_dir, gid);
+
+        if (!(directory_exists(groups_dir))){
+            sprintf(msg_buffer, "RGS E_GRP\n");
+        }else{
+            create_file(group_dir, uid, "");
+            sprintf(msg_buffer, "RGS OK\n");
+        }
+
+        free(groups_dir);
+    }
+
+    send_udp_message(connection, msg_buffer);
+    free(user_dir);
+}
+
+void unsubscribe(connection_context_t *connection, char *args, char *fs){
+    char *uid = get_word(&args);
+    char *gid = get_word(&args);
+
+}
+
 void my_groups(connection_context_t *, char *, char *){}
 void ulist(connection_context_t *, char *, char *){}
 void post(connection_context_t *, char *, char *){}
