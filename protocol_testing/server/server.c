@@ -43,6 +43,7 @@ int max(int x, int y)
 
 int main(int argc, char *argv[]){
   DEBUG_MSG_SECTION("MAIN");
+  DEBUG_MSG("BEGIN\n");
 
   char dsport[PORT_SIZE];
   bool verbose;
@@ -88,9 +89,14 @@ int main(int argc, char *argv[]){
     }
     else{
       if(FD_ISSET(context->tcp_info->fd, &rset)){
-        //Close listen fd?
-        int nfd = wait_tcp_message(context, buffer_tcp, BUFFER_SIZE);
-        send_tcp_message(context, buffer_tcp, BUFFER_SIZE, nfd);
+        int nfd = accept_tcp_message(context);
+        if(fork() == 0){
+          close(context->tcp_info->fd);
+          wait_tcp_message(context,buffer_tcp,BUFFER_SIZE, nfd);
+          send_tcp_message(context, buffer_tcp, BUFFER_SIZE, nfd);
+          DEBUG_MSG("Close Fork %d\n", getpid());
+          exit(0);
+        }
       }
     }
   }
