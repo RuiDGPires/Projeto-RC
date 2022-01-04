@@ -77,7 +77,7 @@ int wait_tcp_message(connection_context_t *connection, char *buffer, size_t size
   ASSERT(read(newfd,buffer,size) != -1, "Error receiving message");
 
   DEBUG_MSG("Message received!: \n\t%s\n", buffer);
-  return newfd
+  return newfd;
 }
 
 void send_tcp_message(connection_context_t *connection, char *buffer, size_t size, int newfd){
