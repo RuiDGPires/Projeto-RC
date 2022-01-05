@@ -65,19 +65,26 @@ void send_udp_message_size(connection_context_t *connection, char *buffer, size_
   ASSERT(sendto(connection->udp_info->fd,buffer, size,0, (struct sockaddr*) &(connection->udp_info->addr), connection->udp_info->addrlen) != -1, "Error sending message");
 }
 
-int wait_tcp_message(connection_context_t *connection, char *buffer, size_t size){
+int accept_tcp_message(connection_context_t *connection){
   DEBUG_MSG_SECTION("TCP");
-  DEBUG_MSG("Waiting message...\n");
+  DEBUG_MSG("Waiting connection... \n");
   connection->tcp_info->addrlen = sizeof(connection->tcp_info->addr);
 
   int newfd;
 
   newfd = accept(connection->tcp_info->fd, (struct sockaddr*) &(connection->tcp_info->addr), &connection->tcp_info->addrlen);
   ASSERT(newfd != -1, "Error acceptiong connection");
+  return newfd;
+}
+
+
+void wait_tcp_message(connection_context_t *connection, char *buffer, size_t size, int newfd){
+  DEBUG_MSG_SECTION("TCP");
+  DEBUG_MSG("Waiting message...\n");
+  
   ASSERT(read(newfd,buffer,size) != -1, "Error receiving message");
 
   DEBUG_MSG("Message received!: \n\t%s\n", buffer);
-  return newfd;
 }
 
 void send_tcp_message(connection_context_t *connection, char *buffer, size_t size, int newfd){
