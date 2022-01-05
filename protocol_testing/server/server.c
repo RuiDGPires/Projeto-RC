@@ -78,11 +78,7 @@ int main(int argc, char *argv[]){
 
     if(FD_ISSET(context->udp_info->fd, &rset)){
         wait_udp_message(context, buffer_udp, BUFFER_SIZE);
-        if(fork() == 0){
-          send_udp_message(context, buffer_udp);
-          DEBUG_MSG("Close Fork %d\n", getpid());
-          exit(0);
-        }
+        send_udp_message(context, buffer_udp);
     }
     else{
       if(FD_ISSET(context->tcp_info->fd, &rset)){

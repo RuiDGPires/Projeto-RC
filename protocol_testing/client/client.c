@@ -9,6 +9,9 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include "../../common/util.h"
 #include "../../common/debug.h"
@@ -53,16 +56,25 @@ int main(int argc, char *argv[]){
   connection_context_t *context = init_connection(dsip, dsport); // Inicializa conecção e guarda informação em context
 
   char input_buffer[BUFFER_SIZE];
+  char buffer_tcp[BUFFER_SIZE];
 
   int keep_prompt;
-  do{
-    DEBUG_MSG_SECTION("INPT");
-    DEBUG_MSG("Awaiting input...\n");
-
-    size_t size = get_line(input_buffer, stdin);
-    send_tcp_message(context,input_buffer,input_buffer);
-    DEBUG_MSG("%s\n", input_buffer);
-  }while(keep_prompt);
+  if(fork() == 0){
+    /* do{
+      //size_t size = get_line(input_buffer, stdin);
+      sprintf(input_buffer, "Fuck You Mark %d\n", getpid());
+      send_udp_message(context,input_buffer,input_buffer);
+      DEBUG_MSG("%s\n", input_buffer);
+    }while(keep_prompt); */
+  }
+  else{
+    do{
+      //size_t size = get_line(input_buffer, stdin);
+      sprintf(buffer_tcp, "Bless You John %d\n", getpid());
+      send_tcp_message(context,buffer_tcp,buffer_tcp);
+      DEBUG_MSG("%s\n", buffer_tcp);
+    }while(keep_prompt);
+  }
 
   close_connection(&context);
 }
