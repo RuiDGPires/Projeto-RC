@@ -66,9 +66,6 @@ int main(int argc, char *argv[]){
 
   maxfd1 = max(context->tcp_info->fd, context->udp_info->fd) + 1;
 
-  FD_SET(context->udp_info->fd, &rset);
-  FD_SET(context->tcp_info->fd, &rset);
-
   //SELECT
   while(1){
 
