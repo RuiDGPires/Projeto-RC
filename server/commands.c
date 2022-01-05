@@ -47,13 +47,13 @@ void check_gname(const char str[]){
 int check_credencials(const char name[], const char pass[], const char fs[]){
   int ret = 0;
 
-  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 1);
+  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
   sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
 
   if (!(directory_exists(user_path))){
     ret = 1;
   }else{
-    char *pass_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + strlen("pass.txt") + 1);
+    char *pass_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + strlen("pass.txt") + 4);
 
     sprintf(pass_path, "%s/%s/%s/pass.txt", fs, SERVER_USERS_NAME, name);
 
@@ -84,7 +84,7 @@ void reg(connection_context_t *connection, char *args, char *fs){
 
   char buffer[BUFFER_SIZE];
 
-  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 1);
+  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
 
   sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
 
@@ -129,9 +129,9 @@ void login_(connection_context_t *connection, char *args, char *fs){
     char buffer[BUFFER_SIZE];
 
     if (check_credencials(name, pass, fs) == 0){
-    sprintf(buffer, "RLO OK\n");
+        sprintf(buffer, "RLO OK\n");
     }else{
-    sprintf(buffer, "RLO NOK\n");
+        sprintf(buffer, "RLO NOK\n");
     }
 
     send_udp_message(connection, buffer);
@@ -171,7 +171,7 @@ void groups(connection_context_t *connection, char *args, char *fs){
     FOR_ITEM_IN_LIST(group, group_list)
         char *top = &msg_buffer[strlen(msg_buffer)];
 
-        char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 4));
+        char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(groups_path) + strlen(group) + 3));
 
         sprintf(group_msgs_path, "%s/%s/", groups_path, group);
         sll_link_t msg_list = list_subdirectories(group_msgs_path);
@@ -224,9 +224,9 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
 
             sprintf(group_dir, "%s/%02d", groups_dir, new_id);
 
-            create_directory_abs(groups_dir);
-            create_directory(groups_dir, "MSG");
-            create_file(groups_dir, "name.txt", gname);
+            create_directory_abs(group_dir);
+            create_directory(group_dir, "MSG");
+            create_file(group_dir, "name.txt", gname);
 
             sll_destroy(&group_list);
             sprintf(gid, "%02d", new_id);
@@ -241,6 +241,7 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
             sprintf(msg_buffer, "RGS OK\n");
         }
 
+        free(group_dir);
         free(groups_dir);
     }
 

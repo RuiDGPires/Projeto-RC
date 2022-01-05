@@ -15,9 +15,9 @@ char *create_filesystem(char *path){
 
     DEBUG_MSG("Initiating file system\n");
 
-    char *server_path = (char*) malloc(sizeof(char)*(strlen(path)+6));
+    char *server_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(SERVER_DIRECTORY_NAME) + 2));
 
-    sprintf(server_path,"%s/SERVER", path);
+    sprintf(server_path,"%s/%s", path, SERVER_DIRECTORY_NAME);
 
     if (!(directory_exists(server_path))){
       ASSERT(mkdir(server_path, 0700) != -1, "Unable to create main directory"); //error
@@ -44,7 +44,7 @@ void destroy_filesystem(char **path){
 void create_directory(char *path, char *name){
     DEBUG_MSG_SECTION("FSYS");
 
-    char *dir_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name)));
+    char *dir_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name)) + 2);
     sprintf(dir_path,"%s/%s", path, name);
     if(mkdir(dir_path, 0700) == -1) exit(1); //error
     DEBUG_MSG("Directory Created %s\n", dir_path);
@@ -68,7 +68,7 @@ void delete_directory(char *path){
 
             if (dir->d_type == DT_DIR ){
                 //DIR
-                file_path = (char*) malloc (sizeof(char) * (strlen(path) + strlen(dir->d_name)));
+                file_path = (char*) malloc (sizeof(char) * (strlen(path) + strlen(dir->d_name) + 2));
                 sprintf(file_path, "%s/%s", path, dir->d_name);
                 delete_directory(file_path);
 
@@ -76,7 +76,7 @@ void delete_directory(char *path){
                 continue;
             }
         
-            file_path = (char*) malloc (sizeof(char) * (strlen(path) + strlen(dir->d_name)));
+            file_path = (char*) malloc (sizeof(char) * (strlen(path) + strlen(dir->d_name) + 2));
             sprintf(file_path, "%s/%s", path, dir->d_name);
             ASSERT(remove(file_path) != -1, "Couldn't remove %s", file_path); 
 
@@ -120,7 +120,7 @@ sll_link_t list_subdirectories(char *path){
 void create_file(char *path, char *name, char *data){
     DEBUG_MSG_SECTION("FSYS");
 
-    char *file_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name)));
+    char *file_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name) + 2));
     sprintf(file_path,"%s/%s", path, name);
 
     FILE *file = fopen(file_path, "w");
@@ -139,7 +139,7 @@ void create_file(char *path, char *name, char *data){
 void delete_file(char *path, char *name){
     DEBUG_MSG_SECTION("FSYS");
 
-    char *file_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name)));
+    char *file_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name) + 2));
     sprintf(file_path,"%s/%s", path, name);
 
     ASSERT(remove(file_path) == 0, "Unable to delete file");
