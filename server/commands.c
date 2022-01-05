@@ -83,7 +83,7 @@ bool is_logged_in(const char name[], const char fs[]){
   char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
   sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);  
 
-  if(file_exist(user_path, "login.txt")){
+  if(file_exists(user_path, "login.txt")){
     return 1;
   }
   return 0;
@@ -289,7 +289,7 @@ void unsubscribe(connection_context_t *connection, char *args, char *fs){
 
 }
 
-//void my_groups(connection_context_t *, char *, char *){}
-//void ulist(connection_context_t *, char *, char *){}
-//void post(connection_context_t *, char *, char *){}
-//void retrieve(connection_context_t *, char *, char *){}
+void my_groups(connection_context_t *temp1, char *temp2, char *temp3){}
+void ulist(connection_context_t *temp1, char *temp2, char *temp3){}
+void post(connection_context_t *temp1, char *temp2, char *temp3){}
+void retrieve(connection_context_t *temp1, char *temp2, char *temp3){}
