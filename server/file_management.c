@@ -130,7 +130,6 @@ void create_file(char *path, char *name, char *data){
 
     fclose(file);
 
-    //create file?????????????????????????????? help
     DEBUG_MSG("%s File Created (%s)\n", name, file_path);
 
     free(file_path);
@@ -143,4 +142,17 @@ void delete_file(char *path, char *name){
     sprintf(file_path,"%s/%s", path, name);
 
     ASSERT(remove(file_path) == 0, "Unable to delete file");
+}
+
+bool file_exists(char *path, char *name){
+    DEBUG_MSG_SECTION("FSYS");
+
+    struct stat sb;
+    char *fname = (char*) malloc ( sizeof(char)*(strlen(path) + strlen(name) + 2));
+    sprintf(fname, "%s/%s", path, name);
+    
+
+    bool ret =  stat(fname, &sb) == 0 && S_ISREG(sb.st_mode);
+    free(fname);
+    return ret;
 }
