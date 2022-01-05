@@ -78,6 +78,18 @@ int check_credencials(const char name[], const char pass[], const char fs[]){
   return ret;
 }
 
+bool is_logged_in(const char name[], const char fs[]){
+
+  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+  sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);  
+
+  if(file_exist(user_path, "login.txt")){
+    return 1;
+  }
+  return 0;
+}
+
+
 void reg(connection_context_t *connection, char *args, char *fs){
   char *name = get_word(&args);
   char *pass= get_word(&args);
@@ -112,10 +124,10 @@ void unregister(connection_context_t *connection, char *args, char *fs){
     sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
 
     if (check_credencials(name, pass, fs) == 0){
-    delete_directory(user_path);
-    sprintf(buffer, "RUN OK\n");
+      delete_directory(user_path);
+      sprintf(buffer, "RUN OK\n");
     }else{
-    sprintf(buffer, "RUN NOK\n");
+      sprintf(buffer, "RUN NOK\n");
     }
 
     send_udp_message(connection, buffer);
@@ -128,11 +140,21 @@ void login_(connection_context_t *connection, char *args, char *fs){
 
     char buffer[BUFFER_SIZE];
 
+    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+
+    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+
     if (check_credencials(name, pass, fs) == 0){
-        sprintf(buffer, "RLO OK\n");
+      if(!(is_logged_in(user_path, fs))){
+        create_file(user_path, "login.txt", NULL);
+      }
+      sprintf(buffer, "RLO OK\n");
+      
     }else{
         sprintf(buffer, "RLO NOK\n");
     }
+
+    free(user_path);
 
     send_udp_message(connection, buffer);
 }
@@ -143,8 +165,13 @@ void logout_(connection_context_t *connection, char *args, char *fs){
 
     char buffer[BUFFER_SIZE];
 
+    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+
     if (check_credencials(name, pass, fs) == 0){
-    sprintf(buffer, "ROU OK\n");
+      if(is_logged_in(user_path, fs)){
+        delete_file(user_path, "login.txt");
+      }
+      sprintf(buffer, "ROU OK\n");
     }else{
     sprintf(buffer, "ROU NOK\n");
     }
@@ -253,9 +280,16 @@ void unsubscribe(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *gid = get_word(&args);
 
+    char msg_buffer[BUFFER_SIZE];
+
+    char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
+    sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+
+
 }
 
-void my_groups(connection_context_t *, char *, char *){}
-void ulist(connection_context_t *, char *, char *){}
-void post(connection_context_t *, char *, char *){}
-void retrieve(connection_context_t *, char *, char *){}
+//void my_groups(connection_context_t *, char *, char *){}
+//void ulist(connection_context_t *, char *, char *){}
+//void post(connection_context_t *, char *, char *){}
+//void retrieve(connection_context_t *, char *, char *){}
