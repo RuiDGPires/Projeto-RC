@@ -63,13 +63,28 @@ void parse_args(char *dsport, bool *verbose, int argc, char *argv[]){
   DEBUG_MSG("dsport set to: %s\n", dsport);
 }
 
+int max(int x, int y)
+{
+    if (x > y)
+        return x;
+    else
+        return y;
+}
+
+
 int main(int argc, char *argv[]){
   DEBUG_MSG_SECTION("MAIN");
 
   char dsport[PORT_SIZE];
   bool verbose;
 
-  char buffer[BUFFER_SIZE];
+  char buffer_udp[BUFFER_SIZE];
+  char buffer_tcp[BUFFER_SIZE];
+
+  int maxfd1;
+  fd_set rset;
+
+
 
   parse_args(dsport, &verbose, argc, argv);
 
@@ -77,13 +92,39 @@ int main(int argc, char *argv[]){
   strcpy(context->port, dsport);
 
   init_udp(context);
-  //Init tcp?
+  init_tcp(context);
 
   char *fs = create_filesystem(".");
 
+  FD_ZERO(&rset);
+
+  maxfd1 = max(context->tcp_info->fd, context->udp_info->fd) + 1;
+
   while (1) {
-    wait_udp_message(context, buffer, BUFFER_SIZE);
-    parse_message(context, buffer, fs);
+
+    FD_SET(context->udp_info->fd, &rset);
+    FD_SET(context->tcp_info->fd, &rset);
+
+    DEBUG_MSG("Waiting Select... \n");
+    select(maxfd1, &rset, NULL, NULL, NULL);
+    DEBUG_MSG("... Select Completed \n");
+
+    if(FD_ISSET(context->udp_info->fd, &rset)){
+        wait_udp_message(context, buffer_udp, BUFFER_SIZE);
+        parse_message(context, buffer_udp, fs);
+    }
+    else{
+      if(FD_ISSET(context->tcp_info->fd, &rset)){
+        int nfd = accept_tcp_message(context);
+        if(fork() == 0){
+          close(context->tcp_info->fd);
+          wait_tcp_message(context,buffer_tcp,BUFFER_SIZE, nfd);
+          parse_message(context, buffer_tcp, fs); //Do TCP stuff
+          DEBUG_MSG("Close Fork %d\n", getpid());
+          exit(0);
+        }
+      }
+    }
   }
 
   close_udp(context);
