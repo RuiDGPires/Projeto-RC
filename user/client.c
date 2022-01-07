@@ -22,42 +22,43 @@
 bool parse_input (connection_context_t *context, char str[]){
   if (strlen(str) == 0) return 1;
   char *command = get_word(&str);
+  int error = 1;
 
   if (strcmp(command, "reg") == 0){
-    reg(context, str);
+    error = reg(context, str);
   }else if (strcmp(command, "unregister") == 0){
-    unregister(context, str);
+    error = unregister(context, str);
   }else if (strcmp(command, "login") == 0){
-    login_(context, str);
+    error = login_(context, str);
   }else if (strcmp(command, "logout") == 0){
-    logout_(context, str);
+    error = logout_(context, str);
   }else if (strcmp(command, "showuid") == 0 || strcmp(command, "su") == 0){
-    showuid(context, str);
+    error = showuid(context, str);
   }else if (strcmp(command, "exit") == 0){
     if (is_logged(context->session))
-        logout_(context, str);
+        error = logout_(context, str);
     return 0;
   }else if (strcmp(command, "groups") == 0 || strcmp(command, "gl") == 0){
-    groups(context, str);
+    error = groups(context, str);
   }else if (strcmp(command, "subscribe") == 0 || strcmp(command, "s") == 0){
-    subscribe(context, str);
+    error = subscribe(context, str);
   }else if (strcmp(command, "unsubscribe") == 0 || strcmp(command, "u") == 0){
-    unsubscribe(context, str);
+    error = unsubscribe(context, str);
   }else if (strcmp(command, "my_groups") == 0 || strcmp(command, "mgl") == 0){
-    my_groups(context, str);
+    error = my_groups(context, str);
   }else if (strcmp(command, "select") == 0 || strcmp(command, "sag") == 0){
-    select_(context, str);
+    error = select_(context, str);
   }else if (strcmp(command, "showgid") == 0 || strcmp(command, "sg") == 0){
-    showgid(context, str);
+    error = showgid(context, str);
   }else if (strcmp(command, "ulist") == 0 || strcmp(command, "ul") == 0){
-    ulist(context, str);
+    error = ulist(context, str);
   }else if (strcmp(command, "post") == 0){
-    post(context, str);
+    error = post(context, str);
   }else if (strcmp(command, "retrieve") == 0 || strcmp(command, "r") == 0){
-    retrieve(context, str);
+    error = retrieve(context, str);
   }else throw_error("Unkown command");
 
-  return 1;
+  return error;
 }
 
 #define CLEAR(var) var[0] = '\0'
@@ -107,4 +108,6 @@ int main(int argc, char *argv[]){
   }while(keep_prompt);
 
   close_connection(&context);
+  DEBUG_MSG_SECTION("MAIN");
+  DEBUG_MSG("Client Closed\n");
 }

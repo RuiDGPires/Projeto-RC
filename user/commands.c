@@ -7,47 +7,79 @@
 #include <unistd.h>
 #include <ctype.h>
 
-void check_uid(const char str[]){
+#define SUCCESS 1
+#define WARNING 1
+#define FERROR 0
+
+int check_uid(const char str[]){
+  if (str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size == 5, "Invalid user name size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i])) throw_error("Invalid user name characters");
+    if (!isdigit(str[i])){
+      throw_error("Invalid user name characters");
+      return FERROR;
+    }
+  return size == 5;
+  
 }
 
-void check_pass(const char str[]){
+int check_pass(const char str[]){
+  if(str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size == 8, "Invalid password size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i])) throw_error("Invalid password characters");
+    if (!isdigit(str[i]) && !isalpha(str[i])){
+      throw_error("Invalid password characters");
+      return FERROR;
+    }
+  return size == 8;
 }
 
-void check_gid(const char str[]){
+int check_gid(const char str[]){
+  if(str == NULL){
+    throw_error("Invalid group id");
+    return FERROR;
+  }
+
   size_t size = strlen(str);
-  ASSERT(size == 2, "Invalid group number size");
+  ASSERT(size == 2, "Invalid group id size");
 
   for (size_t i = 0; i < size; i++)
     if (!isdigit(str[i])) throw_error("Invalid group id chars");
+
+  return size == 2;
 }
 
-void check_gname(const char str[]){
+int check_gname(const char str[]){
   size_t size = strlen(str);
   ASSERT(size < 24, "Invalid group name length");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') throw_error("Invalid group name chars");
+    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_'){
+      throw_error("Invalid group name chars");
+      return FERROR;
+    }
+  return size < 24;
 }
 
-void reg(connection_context_t *connection, char *args){
+int reg(connection_context_t *connection, char *args){
   char buffer[BUFFER_SIZE];
   char response_buffer[BUFFER_SIZE];
   char *uid, *pass;
+
   uid = get_word(&args);
   pass = get_word(&args);
 
-  check_uid(uid);
-  check_pass(pass);
+  if(check_uid(uid) == FERROR || check_pass(pass) == FERROR) return FERROR;
 
   sprintf(buffer, "%s %s %s\n", "REG", uid, pass);
 
@@ -60,22 +92,24 @@ void reg(connection_context_t *connection, char *args){
   char *status = get_word(&response);
   if (strcmp(status, "OK") == 0){
     success("User successfully registered");
+    return SUCCESS;
   }else if (strcmp(status, "DUP") == 0){
     warning("User is already registered");
+    return WARNING;
   }else {
     warning("An error occured while registering user");
+    return FERROR;
   }
 }
 
-void unregister(connection_context_t *connection, char *args){
+int unregister(connection_context_t *connection, char *args){
   char buffer[BUFFER_SIZE];
   char response_buffer[BUFFER_SIZE];
   char *uid, *pass;
   uid = get_word(&args);
   pass = get_word(&args);
 
-  check_uid(uid);
-  check_pass(pass);
+  if(check_uid(uid) == FERROR || check_pass(pass) == FERROR) return FERROR;
 
   sprintf(buffer, "%s %s %s\n", "UNR", uid, pass);
 
@@ -92,20 +126,21 @@ void unregister(connection_context_t *connection, char *args){
         if (strcmp(connection->session->uid, uid) == 0)
             logout(connection->session);
     }
+    return SUCCESS;
   }else {
     warning("Invalid user or incorrect password");
+    return FERROR; //Should Shut Down?
   }
 }
 
-void login_(connection_context_t *connection, char *args){
+int login_(connection_context_t *connection, char *args){
   char buffer[BUFFER_SIZE];
   char response_buffer[BUFFER_SIZE];
   char *uid, *pass;
   uid = get_word(&args);
   pass = get_word(&args);
 
-  check_uid(uid);
-  check_pass(pass);
+  if(check_uid(uid) == FERROR || check_pass(pass) == FERROR) return FERROR;
 
   sprintf(buffer, "%s %s %s\n", "LOG", uid, pass);
   
@@ -121,23 +156,26 @@ void login_(connection_context_t *connection, char *args){
   if (strcmp(status, "OK") == 0){
     if (is_logged(session)){
       warning("You are already logged in");
+      return WARNING;
     }else{
       success("You are now logged in");
       login(session, uid, pass);
+      return SUCCESS;
     }
   }else {
     warning("Invalid user or incorrect password");
+    return FERROR; //Should Shut Down?
   }
 }
 
-void logout_(connection_context_t *connection, char *args){
+int logout_(connection_context_t *connection, char *args){
   char buffer[BUFFER_SIZE];
   char response_buffer[BUFFER_SIZE];
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return; 
+    return WARNING;
   }
   sprintf(buffer, "%s %s %s\n", "OUT", session->uid, session->pass);
 
@@ -150,20 +188,22 @@ void logout_(connection_context_t *connection, char *args){
 
   success("You are now logged out");
   logout(session);
+  return SUCCESS;
 }
 
-void showuid(connection_context_t *connection, char *args){
+int showuid(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return;
+    return WARNING;
   }
   printf("%s\n", session->uid);
+  return SUCCESS;
 }
 
 #define RESPONSE_SIZE BUFFER_SIZE*50
-void groups(connection_context_t *connection, char *args){
+int groups(connection_context_t *connection, char *args){
   char response_buffer[RESPONSE_SIZE];
   send_udp_message_size(connection, "GLS\n", response_buffer, RESPONSE_SIZE);
   
@@ -184,19 +224,23 @@ void groups(connection_context_t *connection, char *args){
     }
   }else{
     warning("There are no groups available\n");
+    return WARNING;
   }
+  return SUCCESS;
 }
 
-void subscribe(connection_context_t *connection, char *args){
+int subscribe(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return;
+    return WARNING;
   }
 
   char *gid = get_word(&args);
   char *gname = get_word(&args);
+
+  if(check_gid(gid) == FERROR || check_gname(gname) == FERROR) return WARNING; //Should this shut down?
 
   char buffer[BUFFER_SIZE];
 
@@ -209,30 +253,40 @@ void subscribe(connection_context_t *connection, char *args){
 
   if (strcmp(status, "OK") == 0){
     success("Subscribed to: [%s] %s", gid, gname);
+    return SUCCESS;
   }else if (strcmp(status, "NEW") == 0){
     success("New group create and subscribed: [%s] %s", get_word(&response), gname);
+    return SUCCESS;
   }else if (strcmp(status, "E_USR") == 0){
     throw_error("Invalid UID"); // This shouldn't happen...
+    return FERROR; //Should Shut Down?
   }else if (strcmp(status, "E_GRP") == 0){
-    warning("Invalid GID: %s", gid); 
+    warning("Invalid GID: %s", gid);
+    return WARNING;
   }else if (strcmp(status, "E_GNAME") == 0){
     warning("Invalid GNAME: %s", gname);
+    return WARNING;
   }else if (strcmp(status, "E_FULL") == 0){
     warning("Server capacity is full, no more groups can be created");
+    return WARNING;
   }else{
     throw_error("Unkown error");
+    return FERROR;
   }
 }
 
-void unsubscribe(connection_context_t *connection, char *args){
+int unsubscribe(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return;
+    return WARNING;
   }
 
   char *gid = get_word(&args);
+
+  if (check_gid(gid) == FERROR) return WARNING; //Should Shut Down?
+
   char buffer[BUFFER_SIZE];
 
   sprintf(buffer, "%s %s %s\n", "GUR", session->uid, gid);
@@ -245,21 +299,25 @@ void unsubscribe(connection_context_t *connection, char *args){
 
   if (strcmp(status, "OK") == 0){
     success("You are no longer subscribed to group %s", gid);
+    return SUCCESS;
   }else if (strcmp(status, "E_USR") == 0){
     throw_error("Invalid UID"); // This shouldn't happen...
+    return FERROR; //Should Shut Down?
   }else if (strcmp(status, "E_GRP") == 0){
     warning("Invalid GID: %s", gid);
+    return WARNING;
   }else {
     throw_error("Unkown error");
+    return FERROR;
   }
 }
 
-void my_groups(connection_context_t *connection, char *args){
+int my_groups(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return;
+    return WARNING;
   }
 
   char buffer[RESPONSE_SIZE];
@@ -274,6 +332,7 @@ void my_groups(connection_context_t *connection, char *args){
   
   if (strcmp(N_str, "E_USR") == 0){
     throw_error("Invalid UID"); // This shouldn't happen...
+    return FERROR; //Should Shut Down?
   }else{
     int N = atoi(N_str);
 
@@ -286,50 +345,54 @@ void my_groups(connection_context_t *connection, char *args){
         printf("\t[%s] %s\n", id, name);
         (void) get_word(&response);
       }
+      return SUCCESS;
     }else{
       warning("You are not subscribed to any group\n");
+      return WARNING;
     }
   }
 }
 
-void select_(connection_context_t *connection, char *args){
+int select_(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return;
+    return WARNING;
   }
 
   select_group(connection->session, get_word(&args));
   success("Selected: %s", session->gid);
+  return SUCCESS;
 }
 
-void showgid(connection_context_t *connection, char *args){
+int showgid(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return;
+    return WARNING;
   }
   if (!is_group_selected(session)){
     warning("No group selected");
-    return;
+    return WARNING;
   }
 
   printf("Selected: %s\n", session->gid);
+  return SUCCESS;
 }
 
-void ulist(connection_context_t *connection, char *args){
+int ulist(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return;
+    return WARNING;
   }
 
   if (!is_group_selected(session)){
     warning("No group selected");
-    return;
+    return WARNING;
   }
 
   char buffer[BUFFER_SIZE];
@@ -350,6 +413,7 @@ void ulist(connection_context_t *connection, char *args){
 
     if (buffer[0] == '\0'){
       warning("There are no users subscribed to %s", gname);
+      return WARNING;
     }else{
       success("List of users subscribed to %s:", gname);
 
@@ -357,23 +421,25 @@ void ulist(connection_context_t *connection, char *args){
         get_word_fd(connection->tcp_info->fd, buffer);
         printf("\t%s\n", buffer);
       }
+      return SUCCESS;
     }
   }else {
     warning("Group %s does not exist", session->gid);
+    return WARNING;
   }
 }
 
-void post(connection_context_t *connection, char *args){
+int post(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return;
+    return WARNING;
   }
 
   if (!is_group_selected(session)){
     warning("No group selected");
-    return;
+    return WARNING;
   }
 
   char *msg = get_quote(&args);
@@ -382,6 +448,7 @@ void post(connection_context_t *connection, char *args){
   // Verificar aspas
   ASSERT(msg[msg_size - 1] == '"', "Message must be surrounded by double quotes");
   ASSERT(msg[0] == '"', "Message must be surrounded by double quotes");
+  if(msg[msg_size - 1] != '"' || msg[0] != '"') return WARNING; //Should Shut Down?
 
   // Remover aspas
   msg[msg_size-1] = '\0';
@@ -403,6 +470,7 @@ void post(connection_context_t *connection, char *args){
     // Abrir ficheiro
     FILE *file = fopen(file_name, "rb");
     ASSERT(file != NULL, "Unable to open file: %s", file_name);
+    if(file != NULL) return FERROR; //Should Shut Down?
 
     size_t file_size = get_file_size(file);
 
@@ -428,26 +496,28 @@ void post(connection_context_t *connection, char *args){
 
   if (strcmp(status, "NOK") == 0){
     warning("Post failed");
+    return WARNING;
   }else{
     success("Post succeeded with MID: %s", status);
+    return SUCCESS;
   }
 }
 
 // Isto é o retrieve....
-void retrieve(connection_context_t *connection, char *args){
+int retrieve(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
   if (!is_logged(session)){
     warning("You are not logged in");
-    return;
+    return WARNING;
   }
 
   if (!is_group_selected(session)){
     warning("No group selected");
-    return;
+    return WARNING;
   }
 
-  char *mid = get_word(&args);
+  char *mid = get_word(&args); //Check mid?
   int mid_int = atoi(mid);
   char buffer[BUFFER_SIZE];
   sprintf(buffer, "RTV %s %s %04d\n", session->uid, session->gid, mid_int);
@@ -522,6 +592,7 @@ void retrieve(connection_context_t *connection, char *args){
         DEBUG_MSG("Read size %d\n", total_read_size);
 
         ASSERT(file_size == total_read_size, "File sizes don't match");
+        if(file_size == total_read_size) return FERROR; //Should Shut Down?
         // get rid of ' '
         (void) read(connection->tcp_info->fd, buffer, 1);
 
@@ -530,6 +601,7 @@ void retrieve(connection_context_t *connection, char *args){
         fwrite(file_data, 1, file_size, file);
 
         ASSERT(file_size == get_file_size(file), "File sizes don't match");
+        if(file_size == get_file_size(file)) return FERROR; //Should Shut Down?
         fclose(file);
 
         free(file_data);
@@ -545,9 +617,12 @@ void retrieve(connection_context_t *connection, char *args){
     }
   }else if (strcmp(buffer, "EOF") == 0){
     warning("There are no messages available");
+    return WARNING;
   }else{ // NOK
     throw_error("Unkown error");
+    return FERROR;
   }
 
-  close_tcp_connection(&connection->tcp_info);
+  close_tcp_connection(&connection->tcp_info); //Shouldn't we close tcp connection right after we fill the buffer?
+  return SUCCESS;
 }

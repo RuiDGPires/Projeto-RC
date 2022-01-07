@@ -3,19 +3,19 @@
 
 #include "connection.h"
 
-void reg(connection_context_t *, char *);
-void unregister(connection_context_t *, char *);
-void login_(connection_context_t *, char *);
-void logout_(connection_context_t *, char *);
-void showuid(connection_context_t *, char *);
-void groups(connection_context_t *, char *);
-void subscribe(connection_context_t *, char *);
-void unsubscribe(connection_context_t *, char *);
-void my_groups(connection_context_t *, char *);
-void select_(connection_context_t *, char *);
-void showgid(connection_context_t *, char *);
-void ulist(connection_context_t *, char *);
-void post(connection_context_t *, char *);
-void retrieve(connection_context_t *, char *);
+int reg(connection_context_t *, char *);
+int unregister(connection_context_t *, char *);
+int login_(connection_context_t *, char *);
+int logout_(connection_context_t *, char *);
+int showuid(connection_context_t *, char *);
+int groups(connection_context_t *, char *);
+int subscribe(connection_context_t *, char *);
+int unsubscribe(connection_context_t *, char *);
+int my_groups(connection_context_t *, char *);
+int select_(connection_context_t *, char *);
+int showgid(connection_context_t *, char *);
+int ulist(connection_context_t *, char *);
+int post(connection_context_t *, char *);
+int retrieve(connection_context_t *, char *);
 
 #endif

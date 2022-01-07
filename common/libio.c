@@ -24,7 +24,7 @@ void throw_error(const char *fmt, ...){
     fprintf(stderr, "\t%s\n", strerror(errno));
   fprintf(stderr, NC);
 
-  exit(0);
+  //exit(0);
 
   va_end(args);
 }
