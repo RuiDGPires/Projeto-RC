@@ -304,10 +304,31 @@ void unsubscribe(connection_context_t *connection, char *args, char *fs){
 
     char msg_buffer[BUFFER_SIZE];
 
-    char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
+    char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid) + 3));
     sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
 
+    if (directory_exists(user_dir)){
+        char *group_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid) + 3));
+        sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
+        if (directory_exists(group_dir)){
+            if (file_exists(group_dir, uid)){
+                delete_file(group_dir, uid);
+                sprintf(msg_buffer, "RGU OK");
+            }else{
+                sprintf(msg_buffer, "RGU NOK");
+            }
+        }else{
+            sprintf(msg_buffer, "RGU E_GRP");
+        }
+        free(group_dir);
+    }else{
+        sprintf(msg_buffer, "RGU E_USR");
+    }
 
+    
+     
+    free(user_dir);
+    send_udp_message(connection, msg_buffer);
 }
 
 void my_groups(connection_context_t *temp1, char *temp2, char *temp3){}
