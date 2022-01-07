@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 /* -SERVER
         -USERS
@@ -126,7 +127,8 @@ void create_file(char *path, char *name, char *data){
     FILE *file = fopen(file_path, "w");
     ASSERT(file != NULL, "Unable to open file");
 
-    fprintf(file, "%s", data);
+    if (data != NULL)
+        fprintf(file, "%s", data);
 
     fclose(file);
 
@@ -142,6 +144,7 @@ void delete_file(char *path, char *name){
     sprintf(file_path,"%s/%s", path, name);
 
     ASSERT(remove(file_path) == 0, "Unable to delete file");
+    DEBUG_MSG("File deleted\n");
 }
 
 bool file_exists(char *path, char *name){
@@ -151,8 +154,11 @@ bool file_exists(char *path, char *name){
     char *fname = (char*) malloc ( sizeof(char)*(strlen(path) + strlen(name) + 2));
     sprintf(fname, "%s/%s", path, name);
     
+    //bool ret = stat(real_path, &sb) == 0 && S_ISREG(sb.st_mode);
 
-    bool ret =  stat(fname, &sb) == 0 && S_ISREG(sb.st_mode);
+    bool ret =  access(fname, F_OK ) == 0;
+    DEBUG_MSG("Does %s exist? %s\n", fname, ret? "Yes": "No");
+
     free(fname);
     return ret;
 }
