@@ -128,7 +128,7 @@ void unregister(connection_context_t *connection, char *args, char *fs){
 
         sll_link_t groups_list = list_subdirectories(groups_path);
 
-        FOR_ITEM_IN_LIST(group, groups_list)
+        FOR_ITEM_IN_LIST(char *group, groups_list)
 
             char *group_path = (char *) malloc(sizeof(char) * (strlen(groups_path) + strlen(group) + 2));
 
@@ -217,7 +217,7 @@ void groups(connection_context_t *connection, char *args, char *fs){
 
     sprintf(msg_buffer, "RGL %s", n_str);
 
-    FOR_ITEM_IN_LIST(group, group_list)
+    FOR_ITEM_IN_LIST(char *group, group_list)
         char *top = &msg_buffer[strlen(msg_buffer)];
 
         char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(groups_path) + strlen(group) + 3));
