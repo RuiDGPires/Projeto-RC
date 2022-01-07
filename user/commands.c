@@ -88,6 +88,10 @@ void unregister(connection_context_t *connection, char *args){
   char *status = get_word(&response);
   if (strcmp(status, "OK") == 0){
     success("User successfully unregistered");
+    if (is_logged(connection->session)){
+        if (strcmp(connection->session->uid, uid) == 0)
+            logout(connection->session);
+    }
   }else {
     warning("Invalid user or incorrect password");
   }

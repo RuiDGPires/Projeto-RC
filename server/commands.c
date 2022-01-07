@@ -132,7 +132,7 @@ void unregister(connection_context_t *connection, char *args, char *fs){
 
             char *group_path = (char *) malloc(sizeof(char) * (strlen(groups_path) + strlen(group) + 2));
 
-            sprintf(group_path, "%s/%s", group);
+            sprintf(group_path, "%s/%s", groups_path, group);
 
             if (file_exists(group_path, name)){
                 delete_file(group_path, name);
@@ -306,6 +306,8 @@ void unsubscribe(connection_context_t *connection, char *args, char *fs){
 
     char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
     sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+
 }
 
 void my_groups(connection_context_t *temp1, char *temp2, char *temp3){}
