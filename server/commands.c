@@ -332,6 +332,63 @@ void unsubscribe(connection_context_t *connection, char *args, char *fs){
 }
 
 void my_groups(connection_context_t *temp1, char *temp2, char *temp3){}
-void ulist(connection_context_t *temp1, char *temp2, char *temp3){}
-void post(connection_context_t *temp1, char *temp2, char *temp3){}
-void retrieve(connection_context_t *temp1, char *temp2, char *temp3){}
+
+
+
+void ulist(connection_context_t *connection, char *fs){
+    char gid[3];
+    gid[2] = '\0';
+
+    int fd = connection->tcp_info->fd;
+    read_fd(fd, gid, 2);
+
+    char *msg;
+
+    char *group_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid) + 3));
+    sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
+    
+    if (directory_exists(group_dir)){
+        // read group name
+        char group_name[25];
+        char *name_path = (char *) malloc(sizeof(char) * (strlen(group_dir) + strlen("name.txt") + 2));
+        sprintf(name_path, "%s/%s", group_dir, "name.txt");
+        FILE *file = fopen(name_path, "r");
+        free(name_path);
+
+        fscanf(file, "%s", group_name);
+        fclose(file);
+
+        sll_link_t file_list = list_files(group_dir);
+        
+        size_t size = sll_size(file_list);
+
+        msg = (char *) malloc(sizeof(char) * (11 + strlen(group_name) + size * 6));
+
+        sprintf(msg, "RUL OK %s ", group_name);
+
+        size_t end_of_str = strlen(msg);
+
+        FOR_ITEM_IN_LIST(char *file_name, file_list)
+            if (strcmp(file_name, "name.txt") == 0) continue;
+            sprintf(&msg[end_of_str], "%s ", file_name);
+            end_of_str += strlen(file_name) + 1;
+        END_FIIL()
+
+        msg[end_of_str++] = '\n';
+        msg[end_of_str] = '\0';
+
+        sll_destroy(&file_list);
+    }else{
+        msg = strdup("RUL NOK\n");
+    }
+
+    send_tcp_message(connection, msg);
+
+    free(msg);
+}
+
+void post(connection_context_t *connection, char *fs){
+
+}
+void retrieve(connection_context_t *connection, char *fs){
+}

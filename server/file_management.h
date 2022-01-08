@@ -26,4 +26,5 @@ bool directory_exists(char *);
 void create_file(char *path, char *name, char *data);
 void delete_file(char *path, char *name);
 bool file_exists(char *, char *);
+sll_link_t list_files(char *);
 #endif

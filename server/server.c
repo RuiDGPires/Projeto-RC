@@ -13,7 +13,7 @@
 #define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)
 #define DEFAULT_DSPORT "58065" // 58000 + GN
 
-void parse_message(connection_context_t *connection, char *msg, char *fs){
+void parse_udp_message(connection_context_t *connection, char *msg, char *fs){
   char *command = get_word(&msg);
 
   if (strcmp(command, "REG") == 0){
@@ -32,13 +32,23 @@ void parse_message(connection_context_t *connection, char *msg, char *fs){
     unsubscribe(connection, msg, fs);
   }else if (strcmp(command, "GLM") == 0){
     my_groups(connection, msg, fs);
-  }else if (strcmp(command, "ULS") == 0){
-    ulist(connection, msg, fs);
-  }else if (strcmp(command, "PST") == 0){
-    post(connection, msg, fs);
-  }else if (strcmp(command, "RTV") == 0){
-    retrieve(connection, msg, fs);
   }else throw_error("Unkown command");
+}
+
+void parse_tcp_message(connection_context_t *connection, char *fs){
+    char command[4];
+    command[3] = '\0';
+   
+    read_fd(connection->tcp_info->fd, command, 3);
+    read_fd(connection->tcp_info->fd, NULL, 1); // throw away the space after
+
+    if (strcmp(command, "ULS") == 0){
+        ulist(connection, fs);
+    }else if (strcmp(command, "PST") == 0){
+        post(connection, fs);
+    }else if (strcmp(command, "RTV") == 0){
+        retrieve(connection, fs);
+    }else throw_error("Unkown command");
 }
 
 void parse_args(char *dsport, bool *verbose, int argc, char *argv[]){
@@ -79,7 +89,6 @@ int main(int argc, char *argv[]){
   bool verbose;
 
   char buffer_udp[BUFFER_SIZE];
-  char buffer_tcp[BUFFER_SIZE];
 
   int maxfd1;
   fd_set rset;
@@ -101,7 +110,6 @@ int main(int argc, char *argv[]){
   maxfd1 = max(context->tcp_info->fd, context->udp_info->fd) + 1;
 
   while (1) {
-
     FD_SET(context->udp_info->fd, &rset);
     FD_SET(context->tcp_info->fd, &rset);
 
@@ -111,17 +119,16 @@ int main(int argc, char *argv[]){
 
     if(FD_ISSET(context->udp_info->fd, &rset)){
         wait_udp_message(context, buffer_udp, BUFFER_SIZE);
-        parse_message(context, buffer_udp, fs);
+        parse_udp_message(context, buffer_udp, fs);
     }
     else{
       if(FD_ISSET(context->tcp_info->fd, &rset)){
-        int nfd = accept_tcp_message(context);
         if(fork() == 0){
-          close(context->tcp_info->fd);
-          wait_tcp_message(context,buffer_tcp,BUFFER_SIZE, nfd);
-          parse_message(context, buffer_tcp, fs); //Do TCP stuff
-          DEBUG_MSG("Close Fork %d\n", getpid());
-          exit(0);
+            accept_tcp_message(context);
+            parse_tcp_message(context, fs); //Do TCP stuff
+            close(context->tcp_info->fd);
+            DEBUG_MSG("Close Fork %d\n", getpid());
+            exit(0);
         }
       }
     }

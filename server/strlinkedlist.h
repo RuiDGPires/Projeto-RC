@@ -17,11 +17,10 @@ void sll_push(sll_link_t *, const char *);
 size_t sll_size(sll_link_t);
 
 #define FOR_ITEM_IN_LIST(item, lst) {\
-  sll_link_t aux = lst;\
-  while(aux != NULL){\
+  for(sll_link_t aux = lst; aux != NULL; aux = aux->next){\
     item = aux->str;
 
-#define END_FIIL() aux=aux->next;}}
+#define END_FIIL() }}
 
 
 #endif

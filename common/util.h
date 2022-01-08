@@ -34,6 +34,7 @@ typedef char bool; // smallest size
 size_t get_line(char *, FILE *);
 char *get_word(char **);
 size_t get_word_fd(int , char *);
+void read_fd(int , char *, size_t);
 char *get_quote(char **);
 
 size_t get_file_size(FILE *);

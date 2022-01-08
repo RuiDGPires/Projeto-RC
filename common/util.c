@@ -38,6 +38,16 @@ size_t get_word_fd(int fd, char str[]){
   return size;
 }
 
+void read_fd(int fd, char str[], size_t size){
+    if (str != NULL){
+        for (size_t current_size = 0; current_size < size ;) current_size += read(fd, &str[current_size], size - current_size);
+    }else{
+        char c;
+        for (size_t current_size = 0; current_size < size ;) current_size += read(fd, &c, 1);
+    }
+
+}
+
 // FIX THIS LATER
 // MAYBE ADD FUNCTION PASSING FOR THROWING ERRORS
 char *get_quote(char *str[]){

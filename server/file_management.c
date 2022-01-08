@@ -162,3 +162,23 @@ bool file_exists(char *path, char *name){
     free(fname);
     return ret;
 }
+
+sll_link_t list_files(char *path){
+    DIR *d;
+    struct dirent *dir;
+    char *subdir_path;
+    
+    sll_link_t file_list = sll_create();
+
+    d = opendir(path);
+
+    if(d){
+        while((dir = readdir(d)) != NULL){
+            if (dir->d_type != DT_DIR )
+                sll_append(&file_list, dir->d_name);
+        }
+    }
+
+    return file_list;
+
+}
