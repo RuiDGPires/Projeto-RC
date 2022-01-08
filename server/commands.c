@@ -360,7 +360,7 @@ void ulist(connection_context_t *connection, char *fs){
 
         sll_link_t file_list = list_files(group_dir);
         
-        size_t size = sll_size(file_list);
+        size_t size = sll_size(file_list) - 1; // -1 is because of the name.txt file which we do not take into account
 
         msg = (char *) malloc(sizeof(char) * (11 + strlen(group_name) + size * 6));
 
