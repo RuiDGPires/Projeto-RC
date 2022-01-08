@@ -111,7 +111,7 @@ sll_link_t list_subdirectories(char *path){
             if(dir->d_name[0] == '.') continue;
 
             if (dir->d_type == DT_DIR )
-                sll_append(&dir_list, dir->d_name);
+                sll_append_ord(&dir_list, dir->d_name);
         }
     }
 
