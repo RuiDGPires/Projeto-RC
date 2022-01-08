@@ -54,7 +54,10 @@ int check_gid(const char str[]){
   ASSERT(size == 2, "Invalid group id size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i])) throw_error("Invalid group id chars");
+    if (!isdigit(str[i])){
+      throw_error("Invalid group id chars");
+      return FERROR;
+    }
 
   return size == 2;
 }

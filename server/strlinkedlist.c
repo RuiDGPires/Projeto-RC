@@ -1,5 +1,7 @@
 #include "strlinkedlist.h"
 #include <string.h>
+#include "../common/util.h"
+#include "../common/debug.h"
 
 sll_link_t sll_create(){
   return NULL;
@@ -34,6 +36,28 @@ void sll_append(sll_link_t *list, const char *str){
   }
 }
 
+void sll_append_ord(sll_link_t *list, const char *str){
+  //The code logic is bad. I'm not moving the nodes themselves, I'm just updating the values(str)
+
+  // Traverse until the end of the list
+  if ((*list) == NULL){
+    //Empty
+    *list = (sll_link_t) malloc(sizeof(struct sll_node));
+    (*list)->str = strdup(str);
+    (*list)->next = NULL;
+    (*list)->size = 1;
+  }else if (greater(str, (*list)->str)){
+    //Move on
+    (*list)->size += 1;
+    sll_append_ord(&(*list)->next, str);
+  }else{
+    //Right place, current node needs to move
+    (*list)->size += 1;
+    sll_append_ord(&(*list)->next, (*list)->str);
+    (*list)->str = strdup(str);
+  }
+}
+
 void sll_push(sll_link_t *list, const char *str){
   if ((*list) == NULL){
     *list = (sll_link_t) malloc(sizeof(struct sll_node));
@@ -48,6 +72,10 @@ void sll_push(sll_link_t *list, const char *str){
     (*list)->next = aux;
     (*list)->size = aux->size + 1;
   }
+}
+
+int greater(char *str1, char *str2){
+  return atoi(str1) >= atoi(str2);
 }
 
 size_t sll_size(sll_link_t list){

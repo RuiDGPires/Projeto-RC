@@ -123,8 +123,12 @@ int main(int argc, char *argv[]){
     }
     else{
       if(FD_ISSET(context->tcp_info->fd, &rset)){
+        int newfd = accept_tcp_message(context);
         if(fork() == 0){
-            accept_tcp_message(context);
+            //update fd
+            close(context->tcp_info->fd);
+            context->tcp_info->fd = newfd;
+            
             parse_tcp_message(context, fs); //Do TCP stuff
             close(context->tcp_info->fd);
             DEBUG_MSG("Close Fork %d\n", getpid());
