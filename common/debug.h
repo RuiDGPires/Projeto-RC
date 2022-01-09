@@ -44,8 +44,8 @@
         fflush(stderr); \
         fflush(stdout); \
       if (__new_section) {printf("\n"); __new_section = 0;}\
-      printf("%s[%s]%s ", __debug_colors[__color], __debug_msg_section, NC); \
-      printf(__VA_ARGS__); \
+      fprintf(stdout, "%s[%s]%s ", __debug_colors[__color], __debug_msg_section, NC); \
+      fprintf(stdout, __VA_ARGS__); \
     }while(0)
 #else
   #define DEBUG_MSG(...)

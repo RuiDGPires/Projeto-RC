@@ -691,18 +691,11 @@ void retrieve(connection_context_t *connection, char *fs){
                 size_t text_size = get_file_size(file);
 
                 sprintf(&buffer[strlen(buffer)], "%s %ld ", author, text_size);
-                DEBUG_MSG("Buffer before text data: %s\n", buffer);
 
                 write(fd, buffer, strlen(buffer));
 
-                size_t reading_size = 0;
-                for (size_t total_read = 0; total_read < text_size;){
-                    reading_size = (text_size - total_read) > BUFFER_SIZE ? BUFFER_SIZE : (text_size - total_read);
-                    size_t n = fread(buffer, 1, reading_size, file);
-                    if (reading_size <= BUFFER_SIZE) break; // Break before the end so that if there is an anexed file, it gets written at the same time
-                    total_read += n;
-                    write(fd, buffer, n);
-                }
+                char *new_buffer = (char *) malloc(sizeof(char) * text_size + BUFFER_SIZE);
+                fread(new_buffer, 1, text_size, file);
                 fclose(file);
 
                 free(author_path);
@@ -727,8 +720,11 @@ void retrieve(connection_context_t *connection, char *fs){
 
                     char file_size_str[11];
                     sprintf(file_size_str, "%ld", file_size);
-                    sprintf(&buffer[reading_size], " / %s %s ", file_lst->str, file_size_str);
-                    write(fd, buffer, reading_size + 5 + strlen(file_lst->str) + strlen(file_size_str));
+                    sprintf(&new_buffer[text_size], " / %s %s ", file_lst->str, file_size_str);
+
+                    size_t total_size = text_size + 5 + strlen(file_lst->str) + strlen(file_size_str);
+                    for (size_t total_written_size = 0; total_written_size != total_size;)
+                        total_written_size += write(fd, &new_buffer[total_written_size], total_size-total_written_size);
 
                     char buffer[BUFFER_SIZE];
                     for (size_t total_read = 0; total_read < file_size;){
@@ -743,8 +739,10 @@ void retrieve(connection_context_t *connection, char *fs){
                     free(file_path);
                     sll_destroy(&file_lst);
                 }else{
-                    write(fd, buffer, reading_size);
+                    for (size_t total_written_size = 0; total_written_size != text_size;)
+                        total_written_size += write(fd, &new_buffer[total_written_size], text_size-total_written_size);
                 }
+                free(new_buffer);
                 free(msg_dir);
             END_FIIL();
             write(fd, "\n", 1);

@@ -557,15 +557,20 @@ int retrieve(connection_context_t *connection, char *args){
       get_word_fd(connection->tcp_info->fd, buffer);
       char uid[6];
       strcpy(uid, buffer);
-      mid[5] = '\0';
+      uid[5] = '\0';
 
       // Get message size
       get_word_fd(connection->tcp_info->fd, buffer);
       int msg_size = atoi(buffer) - 1; 
 
+      DEBUG_MSG("Message size: %d\n", msg_size);
       // Get message
-      char *msg = (char *) malloc(sizeof(char)*msg_size + 1);
-      read(connection->tcp_info->fd, msg, msg_size);
+      char *msg = (char *) malloc(sizeof(char)*msg_size);
+      size_t total_read_size = 0;
+      while(total_read_size != msg_size)
+        total_read_size += read(connection->tcp_info->fd, &msg[total_read_size], msg_size-total_read_size);
+
+      DEBUG_MSG("Text from message: %s\n", msg);
       msg[msg_size] = '\0';
 
       // get rid of trailing ' '
@@ -600,7 +605,7 @@ int retrieve(connection_context_t *connection, char *args){
         DEBUG_MSG("Read size %ld\n", total_read_size);
 
         ASSERT(file_size == total_read_size, "File sizes don't match");
-        if(file_size == total_read_size) return FERROR; //Should Shut Down?
+        if(file_size != total_read_size) return FERROR; //Should Shut Down?
         // get rid of ' '
         (void) read(connection->tcp_info->fd, buffer, 1);
 
@@ -609,7 +614,7 @@ int retrieve(connection_context_t *connection, char *args){
         fwrite(file_data, 1, file_size, file);
 
         ASSERT(file_size == get_file_size(file), "File sizes don't match");
-        if(file_size == get_file_size(file)) return FERROR; //Should Shut Down?
+        if(file_size != get_file_size(file)) return FERROR; //Should Shut Down?
         fclose(file);
 
         free(file_data);
