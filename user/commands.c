@@ -180,7 +180,8 @@ int logout_(connection_context_t *connection, char *args){
     warning("You are not logged in");
     return WARNING;
   }
-  sprintf(buffer, "%s %s %s\n", "OUT", session->uid, session->pass);
+
+  sprintf(buffer, "OUT %s %s\n",  session->uid, session->pass);
 
   send_udp_message(connection, buffer, response_buffer);
 
@@ -467,7 +468,7 @@ int post(connection_context_t *connection, char *args){
   if (!file_name){
     buffer = (char *) malloc(sizeof(char) * (msg_size + BUFFER_SIZE));
     
-    sprintf(buffer, "PST %s %s %d %s\n", session->uid, session->gid, msg_size, msg);
+    sprintf(buffer, "PST %s %s %ld %s\n", session->uid, session->gid, msg_size, msg);
     sending_msg_size = strlen(buffer);
   }else {
     // Abrir ficheiro
@@ -479,7 +480,11 @@ int post(connection_context_t *connection, char *args){
 
     buffer = (char *) malloc(sizeof(char) * (msg_size + BUFFER_SIZE + file_size));
 
+<<<<<<< HEAD
     sprintf(buffer, "PST %s %s %d %s %s %ld\n", session->uid, session->gid, msg_size, msg, file_name, file_size);
+=======
+    sprintf(buffer, "PST %s %s %ld %s %s %ld ", session->uid, session->gid, msg_size, msg, file_name, file_size);
+>>>>>>> 405dcba1f5e794e6a3fae0bd429fe0b9024114d5
     
     sending_msg_size = strlen(buffer) + file_size + 1;
     read_file(file, file_size, &buffer[strlen(buffer)]);
@@ -592,7 +597,7 @@ int retrieve(connection_context_t *connection, char *args){
         }
 
         DEBUG_MSG("File size: %d\n", file_size);
-        DEBUG_MSG("Read size %d\n", total_read_size);
+        DEBUG_MSG("Read size %ld\n", total_read_size);
 
         ASSERT(file_size == total_read_size, "File sizes don't match");
         if(file_size == total_read_size) return FERROR; //Should Shut Down?

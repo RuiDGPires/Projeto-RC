@@ -30,8 +30,8 @@ struct session_context_s;
 struct connection_context_s;
 
 typedef struct session_context_s {
-	char uid[BUFFER_SIZE], pass[BUFFER_SIZE];
-  char gid[BUFFER_SIZE];
+	char uid[UID_SIZE], pass[PASS_SIZE];
+  char gid[GID_SIZE];
   struct connection_context_s *connection;
 } session_context_t;
 
