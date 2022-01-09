@@ -49,9 +49,13 @@ Functionalities related to handling sockets and the udp and tcp protocols
 
 #### file_management
 
+Handles the file managing functionalities which keep the information the server presistes each session
+
 #### strlinkedlist
 
-#### Presistence Imformation storing system
+Implementation of a linked list
+
+#### Presistence Information storing system
 
 **SERVER**
 &emsp;|-> **USERS**
@@ -63,7 +67,7 @@ Functionalities related to handling sockets and the udp and tcp protocols
 &emsp;&emsp;&emsp;|-> **MSG**
 &emsp;&emsp;&emsp;&emsp;|-> ***MID***
 &emsp;&emsp;&emsp;&emsp;&emsp;|-> **FILE**
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|-> ___/*___ *File sent with the message by the user*
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|-> ___/*___ *File sent anexed to the message by the user*
 &emsp;&emsp;&emsp;&emsp;&emsp;|-> **author.txt** *File with the message's author's uid*
 &emsp;&emsp;&emsp;&emsp;&emsp;|-> **text.txt** *File with the message's text*
 &emsp;&emsp;&emsp;|-> ***UID*** *Group creator's uid*
@@ -73,9 +77,17 @@ Functionalities related to handling sockets and the udp and tcp protocols
 
 #### client.c
 
+Main file of the user functionality
+Handles all the initializations and parsing of user input
+
 #### commands
 
+Functionalities that resolve commands intended to be sent to the server
+
 #### connection
+
+Functionalities related to handling sockets and the udp and tcp protocols.
+Also handles presistente information kept from session to session by the user
 
 ## Authors
 

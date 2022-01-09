@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
 
   char buffer_udp[BUFFER_SIZE];
 
-  int maxfd1, ret;
+  int maxfd1, ret, running = TRUE;
   fd_set rset;
 
   struct sigaction act;
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]){
 
   maxfd1 = max(context->tcp_info->fd, context->udp_info->fd) + 1;
 
-  while (1) {
+  while (running) {
     FD_SET(context->udp_info->fd, &rset);
     FD_SET(context->tcp_info->fd, &rset);
 
@@ -142,7 +142,7 @@ int main(int argc, char *argv[]){
         }
         if(fork() == 1){
           DEBUG_MSG("Error Creating Fork %d\n", getpid());
-          exit(1);
+          running = FALSE;
         }
 
         do ret=close(newfd); while(ret==-1 && errno==EINTR);
@@ -150,13 +150,14 @@ int main(int argc, char *argv[]){
         if(ret==-1){
           /*error*/
           DEBUG_MSG("Error \n");
-          exit(1);
+          running = FALSE;
         }
       }
     }
   }
 
   close_udp(context);
+  close_tcp(context);
   
   return 0;
 }
