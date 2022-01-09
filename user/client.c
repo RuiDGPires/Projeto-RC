@@ -102,7 +102,7 @@ int main(int argc, char *argv[]){
     DEBUG_MSG_SECTION("INPT");
     DEBUG_MSG("Awaiting input...\n");
 
-    size_t size = get_line(input_buffer, stdin);
+    get_line(input_buffer, stdin);
 
     keep_prompt = parse_input(context, input_buffer);
   }while(keep_prompt);
