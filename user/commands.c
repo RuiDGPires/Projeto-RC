@@ -63,6 +63,10 @@ int check_gid(const char str[]){
 }
 
 int check_gname(const char str[]){
+  if(str == NULL){
+    throw_error("Invalid group name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size < 24, "Invalid group name length");
 
