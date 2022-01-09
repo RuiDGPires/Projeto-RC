@@ -637,11 +637,15 @@ void retrieve(connection_context_t *connection, char *fs){
     char *group_dir = (char *) malloc(sizeof(char) * (strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid) + 3));
     sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
 
+    DEBUG_MSG("Group directory: %s\n", group_dir);
+
     char *msg;
 
     if (directory_exists(group_dir)){
         char *msgs_dir = (char *) malloc(sizeof(char) * (strlen(group_dir) + 8)); 
         sprintf(msgs_dir, "%s/MSG", group_dir);
+
+        DEBUG_MSG("Messagesssss directory: %s\n", msgs_dir);
 
         sll_link_t msg_list = list_subdirectories(msgs_dir);
 
@@ -660,16 +664,21 @@ void retrieve(connection_context_t *connection, char *fs){
                 if (current < mid) continue; 
                 if (current >= mid + 20) break;
 
-                char buffer[BUFFER_SIZE*2];
+#define BUFFER_SIZE2 BUFFER_SIZE * 2
+                char buffer[BUFFER_SIZE2];
                 sprintf(buffer, " %s ", current_str);
                 
-                char *msg_dir = (char *) malloc(sizeof(char) * strlen(msgs_dir) + 5);
+                char *msg_dir = (char *) malloc(sizeof(char) * strlen(msgs_dir) + 6);
                 sprintf(msg_dir, "%s/%s", msgs_dir,  current_str);
+
+                DEBUG_MSG("Message directory: %s\n", msg_dir);
 
                 char *author_path = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("author.txt") + 3));
                 sprintf(author_path, "%s/author.txt", msg_dir);
+                DEBUG_MSG("Author path: %s\n", author_path);
                 char *text_path = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("text.txt") + 3));
                 sprintf(text_path, "%s/text.txt", msg_dir);
+                DEBUG_MSG("Text path: %s\n", text_path);
 
                 char author[UID_SIZE];
 
@@ -682,6 +691,7 @@ void retrieve(connection_context_t *connection, char *fs){
                 size_t text_size = get_file_size(file);
 
                 sprintf(&buffer[strlen(buffer)], "%s %ld ", author, text_size);
+                DEBUG_MSG("Buffer before text data: %s\n", buffer);
 
                 write(fd, buffer, strlen(buffer));
 
@@ -701,11 +711,13 @@ void retrieve(connection_context_t *connection, char *fs){
                 // CHECK IF HAS FILE
                 char *file_dir = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("FILE") + 2));
                 sprintf(file_dir, "%s/FILE", msg_dir);
+                DEBUG_MSG("File directory: %s\n", file_dir);
 
                 if (directory_exists(file_dir)){
                     sll_link_t file_lst = list_files(file_dir);
                     
                     char *file_path = (char *) malloc(sizeof(char) * (strlen(file_dir) + strlen(file_lst->str) + 3));
+                    
                     sprintf(file_path, "%s/%s", file_dir, file_lst->str);
 
                     DEBUG_MSG("file: %s\n", file_path);
@@ -716,7 +728,7 @@ void retrieve(connection_context_t *connection, char *fs){
                     char file_size_str[11];
                     sprintf(file_size_str, "%ld", file_size);
                     sprintf(&buffer[reading_size], " / %s %s ", file_lst->str, file_size_str);
-                    write(fd, buffer, reading_size + 6 + strlen(file_lst->str) + strlen(file_size_str));
+                    write(fd, buffer, reading_size + 5 + strlen(file_lst->str) + strlen(file_size_str));
 
                     char buffer[BUFFER_SIZE];
                     for (size_t total_read = 0; total_read < file_size;){
