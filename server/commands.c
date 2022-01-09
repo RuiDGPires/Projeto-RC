@@ -158,16 +158,22 @@ void reg(connection_context_t *connection, char *args, char *fs){
 }
 
 void unregister(connection_context_t *connection, char *args, char *fs){
-    char *name = get_word(&args);
+    char *uid = get_word(&args);
     char *pass= get_word(&args);
 
     char buffer[BUFFER_SIZE];
 
-    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+    if(check_uid(uid) == FERROR || check_pass(pass) == FERROR){
+      sprintf(buffer, "RUN NOK\n");
+      send_udp_message(connection, buffer);
+      return;
+    }
 
-    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
 
-    if (check_credencials(name, pass, fs) == 0){
+    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+    if (check_credencials(uid, pass, fs) == 0){
       delete_directory(user_path);
 
         char *groups_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 2));
@@ -181,8 +187,8 @@ void unregister(connection_context_t *connection, char *args, char *fs){
 
             sprintf(group_path, "%s/%s", groups_path, group);
 
-            if (file_exists(group_path, name)){
-                delete_file(group_path, name);
+            if (file_exists(group_path, uid)){
+                delete_file(group_path, uid);
             }
 
             free(group_path);
