@@ -8,36 +8,73 @@
 #include <unistd.h>
 #include <ctype.h>
 
-void check_uid(const char str[]){
+#define SUCCESS 1
+#define WARNING 1
+#define FERROR 0
+
+int check_uid(const char str[]){
+  if (str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size == 5, "Invalid user name size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i])) throw_error("Invalid user name characters");
+    if (!isdigit(str[i])){
+      throw_error("Invalid user name characters");
+      return FERROR;
+    }
+  
+  return size == 5;
 }
 
 void check_pass(const char str[]){
+  if (str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size == 8, "Invalid password size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i])) throw_error("Invalid password characters");
+    if (!isdigit(str[i]) && !isalpha(str[i])){
+      throw_error("Invalid password characters");
+      return FERROR;
+    }
+  return size == 8;
 }
 
 void check_gid(const char str[]){
+  if (str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size == 2, "Invalid group number size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i])) throw_error("Invalid group id chars");
+    if (!isdigit(str[i])){
+      throw_error("Invalid group id chars");
+      return FERROR;
+    }
+  return size == 2;
 }
 
 void check_gname(const char str[]){
+  if (str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size < 24, "Invalid group name length");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') throw_error("Invalid group name chars");
+    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_'){
+      throw_error("Invalid group name chars");
+      return FERROR;
+    }
+  return size < 24;
 }
 
 // returns:
