@@ -78,8 +78,9 @@ size_t get_file_size(FILE *file){
 }
 
 size_t read_file(FILE *file, size_t size, char *buffer){
-  fread(buffer, size, 1, file);
+  size_t read_size = fread(buffer, size, 1, file);
 
   // Puts a \n at the end
   buffer[size] = '\n';
+  return read_size;
 }

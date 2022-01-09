@@ -9,7 +9,7 @@ debug: FLAGS = -D DEBUG
 debug: all
 
 DS: $(C_FILES)
-	$(CC) $(FLAGS) -o $@ $^
+	$(CC) $(FLAGS) -Wall -Werror -o $@ $^
 
 clean:
 	rm DS

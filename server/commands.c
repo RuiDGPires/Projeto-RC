@@ -1,5 +1,5 @@
-#include "../common/util.h"
 #include "../common/debug.h"
+#include "../common/util.h"
 #include "commands.h"
 #include "file_management.h"
 #include <string.h>
@@ -45,7 +45,9 @@ void check_gname(const char str[]){
 //  1 if user name does not exist
 //  2 if password is wrong
 int check_credencials(const char name[], const char pass[], const char fs[]){
-  int ret = 0;
+    int ret = 0;
+    DEBUG_MSG_SECTION("CHK");
+    DEBUG_MSG("check credencials");
 
   char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
   sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
@@ -62,8 +64,6 @@ int check_credencials(const char name[], const char pass[], const char fs[]){
     char user_pass[9];
     fscanf(file, "%s", user_pass);
     fclose(file);
-
-    DEBUG_MSG_SECTION("UNR");
 
     if (strcmp(user_pass, pass) == 0){
       ret = 0;
@@ -83,7 +83,6 @@ bool is_logged_in(const char name[], const char fs[]){
     char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
     sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);  
 
-    DEBUG_MSG("");
     return (file_exists(user_path, "login"));
 }
 
@@ -209,9 +208,9 @@ void groups(connection_context_t *connection, char *args, char *fs){
 
     sll_link_t group_list = list_subdirectories(groups_path);
 
+    // Convert to string so that strlen can be used to measure string size
     char n_str[BUFFER_SIZE];
-
-    sprintf(n_str, "%d", sll_size(group_list));
+    sprintf(n_str, "%ld", sll_size(group_list));
 
     char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + sll_size(group_list)*33));
 
@@ -236,7 +235,7 @@ void groups(connection_context_t *connection, char *args, char *fs){
         fscanf(file, "%s", group_name);
         fclose(file);
 
-        sprintf(top, " %s %s %04d", group, group_name, sll_size(msg_list));
+        sprintf(top, " %s %s %04ld", group, group_name, sll_size(msg_list));
 
         sll_destroy(&msg_list);
         free(group_msgs_path);
@@ -372,7 +371,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
         fscanf(file, "%s", group_name);
         fclose(file);
 
-        sprintf(top, " %s %s %04d", group, group_name, sll_size(msg_list));
+        sprintf(top, " %s %s %04ld", group, group_name, sll_size(msg_list));
 
         sll_destroy(&msg_list);
         free(group_msgs_path);
@@ -384,7 +383,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
 
   char *msg_buffer = (char *) malloc(sizeof(char)*(4 + n_subscribed_groups + sizeof(groups_buffer)));
 
-  sprintf(n_str, "%ld", n_subscribed_groups);
+  sprintf(n_str, "%d", n_subscribed_groups);
 
   sprintf(msg_buffer, "RGM %s%s", n_str, groups_buffer);
 

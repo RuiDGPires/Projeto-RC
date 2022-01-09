@@ -1,3 +1,4 @@
+#include "../common/debug.h"
 #include "file_management.h"
 #include "strlinkedlist.h"
 #include <string.h>
@@ -100,7 +101,6 @@ bool directory_exists(char *path){
 sll_link_t list_subdirectories(char *path){
     DIR *d;
     struct dirent *dir;
-    char *subdir_path;
     
     sll_link_t dir_list = sll_create();
 
@@ -110,8 +110,8 @@ sll_link_t list_subdirectories(char *path){
         while((dir = readdir(d)) != NULL){
             if(dir->d_name[0] == '.') continue;
 
-            if (dir->d_type == DT_DIR )
-                sll_append_ord(&dir_list, dir->d_name);
+            if (dir->d_type == DT_DIR)
+                sll_append_ord(&dir_list, dir->d_name, strcmp);
         }
     }
 
@@ -150,7 +150,6 @@ void delete_file(char *path, char *name){
 bool file_exists(char *path, char *name){
     DEBUG_MSG_SECTION("FSYS");
 
-    struct stat sb;
     char *fname = (char*) malloc ( sizeof(char)*(strlen(path) + strlen(name) + 2));
     sprintf(fname, "%s/%s", path, name);
     
@@ -166,7 +165,6 @@ bool file_exists(char *path, char *name){
 sll_link_t list_files(char *path){
     DIR *d;
     struct dirent *dir;
-    char *subdir_path;
     
     sll_link_t file_list = sll_create();
 

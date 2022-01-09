@@ -13,9 +13,8 @@ struct sll_node{
 sll_link_t sll_create();
 void sll_destroy(sll_link_t *);
 void sll_append(sll_link_t *, const char *);
-void sll_append_ord(sll_link_t *, const char *);
+void sll_append_ord(sll_link_t *, const char *, int (* ord)(const char *, const char *));
 void sll_push(sll_link_t *, const char *);
-void sll_sort(sll_link_t *);
 size_t sll_size(sll_link_t);
 
 #define FOR_ITEM_IN_LIST(item, lst) {\

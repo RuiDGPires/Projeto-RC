@@ -10,7 +10,6 @@
 #include <dirent.h>
 
 #include "../common/util.h"
-#include "../common/debug.h"
 #include "strlinkedlist.h"
 
 char *create_filesystem(char *);
