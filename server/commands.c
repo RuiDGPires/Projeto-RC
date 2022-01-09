@@ -398,13 +398,18 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
 
         char *top = &groups_buffer[strlen(groups_buffer)];
 
-        char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(groups_path) + strlen(group) + 3));
+        char *groups_gid_path = (char *) malloc(sizeof(char)*(strlen(groups_path) + strlen(group) + 2));
 
-        sprintf(group_msgs_path, "%s/%s/", groups_path, group);
+        sprintf(groups_gid_path, "%s/%s", groups_path, group);
+
+        char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(groups_gid_path) + 5));
+
+        sprintf(group_msgs_path, "%s/MSG", groups_gid_path);
+
         sll_link_t msg_list = list_subdirectories(group_msgs_path);
-
-        char *name_path = (char *) malloc(sizeof(char) * (strlen(group_msgs_path) + strlen("name.txt") + 3));
-        sprintf(name_path, "%s/%s", group_msgs_path, "name.txt");
+        
+        char *name_path = (char *) malloc(sizeof(char) * (strlen(groups_gid_path) + strlen("name.txt") + 3));
+        sprintf(name_path, "%s/%s", groups_gid_path, "name.txt");
         FILE *file = fopen(name_path, "r");
         free(name_path);
 
@@ -416,6 +421,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
         sprintf(top, " %s %s %04ld", group, group_name, sll_size(msg_list));
 
         sll_destroy(&msg_list);
+        free(groups_gid_path);
         free(group_msgs_path);
       }
       free(group_path);
