@@ -480,11 +480,7 @@ int post(connection_context_t *connection, char *args){
 
     buffer = (char *) malloc(sizeof(char) * (msg_size + BUFFER_SIZE + file_size));
 
-<<<<<<< HEAD
-    sprintf(buffer, "PST %s %s %d %s %s %ld\n", session->uid, session->gid, msg_size, msg, file_name, file_size);
-=======
     sprintf(buffer, "PST %s %s %ld %s %s %ld ", session->uid, session->gid, msg_size, msg, file_name, file_size);
->>>>>>> 405dcba1f5e794e6a3fae0bd429fe0b9024114d5
     
     sending_msg_size = strlen(buffer) + file_size + 1;
     read_file(file, file_size, &buffer[strlen(buffer)]);
