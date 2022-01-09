@@ -478,7 +478,7 @@ int post(connection_context_t *connection, char *args){
     // Abrir ficheiro
     FILE *file = fopen(file_name, "rb");
     ASSERT(file != NULL, "Unable to open file: %s", file_name);
-    if(file != NULL) return FERROR; //Should Shut Down?
+    if(file == NULL) return FERROR; //Should Shut Down?
 
     size_t file_size = get_file_size(file);
 
