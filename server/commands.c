@@ -419,7 +419,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
         fscanf(file, "%s", group_name);
         fclose(file);
 
-        sprintf(top, "%s %s %04ld", group, group_name, sll_size(msg_list));
+        sprintf(top, " %s %s %04ld", group, group_name, sll_size(msg_list));
 
         sll_destroy(&msg_list);
         free(group_msgs_path);
@@ -428,10 +428,10 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
   END_FIIL()
 
   sprintf(n_str, "%d", n_subscribed_groups);
+
   char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + strlen(groups_buffer)));
 
-
-  sprintf(msg_buffer, "RGM %s %s", n_str, groups_buffer);
+  sprintf(msg_buffer, "RGM %s%s", n_str, groups_buffer);
 
   send_udp_message(connection, msg_buffer);
 
