@@ -129,14 +129,20 @@ bool is_logged_in(const char name[], const char fs[]){
 }
 
 void reg(connection_context_t *connection, char *args, char *fs){
-  char *name = get_word(&args);
+  char *uid = get_word(&args);
   char *pass= get_word(&args);
 
   char buffer[BUFFER_SIZE];
 
-  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+  if (check_uid(uid) == FERROR || check_pass(pass) == FERROR){
+    sprintf(buffer, "RRG NOK\n");
+    send_udp_message(connection, buffer);
+    return;
+  }
 
-  sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
+
+  sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
 
   if (directory_exists(user_path)){
     sprintf(buffer, "RRG DUP\n");
@@ -152,16 +158,22 @@ void reg(connection_context_t *connection, char *args, char *fs){
 }
 
 void unregister(connection_context_t *connection, char *args, char *fs){
-    char *name = get_word(&args);
+    char *uid = get_word(&args);
     char *pass= get_word(&args);
 
     char buffer[BUFFER_SIZE];
 
-    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+    if(check_uid(uid) == FERROR || check_pass(pass) == FERROR){
+      sprintf(buffer, "RUN NOK\n");
+      send_udp_message(connection, buffer);
+      return;
+    }
 
-    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
 
-    if (check_credencials(name, pass, fs) == 0){
+    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+    if (check_credencials(uid, pass, fs) == 0){
       delete_directory(user_path);
 
         char *groups_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 2));
@@ -175,8 +187,8 @@ void unregister(connection_context_t *connection, char *args, char *fs){
 
             sprintf(group_path, "%s/%s", groups_path, group);
 
-            if (file_exists(group_path, name)){
-                delete_file(group_path, name);
+            if (file_exists(group_path, uid)){
+                delete_file(group_path, uid);
             }
 
             free(group_path);
@@ -196,17 +208,23 @@ void unregister(connection_context_t *connection, char *args, char *fs){
 }
 
 void login_(connection_context_t *connection, char *args, char *fs){
-    char *name = get_word(&args);
+    char *uid = get_word(&args);
     char *pass= get_word(&args);
 
     char buffer[BUFFER_SIZE];
 
-    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+    if(check_uid(uid) == FERROR || check_pass(pass) == FERROR){
+      sprintf(buffer, "RLO NOK\n");
+      send_udp_message(connection, buffer);
+      return;
+    }
 
-    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
 
-    if (check_credencials(name, pass, fs) == 0){
-      if(!(is_logged_in(name, fs))){
+    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+    if (check_credencials(uid, pass, fs) == 0){
+      if(!(is_logged_in(uid, fs))){
         create_file(user_path, "login", NULL);
       }
       sprintf(buffer, "RLO OK\n");
@@ -221,17 +239,23 @@ void login_(connection_context_t *connection, char *args, char *fs){
 }
 
 void logout_(connection_context_t *connection, char *args, char *fs){
-    char *name = get_word(&args);
+    char *uid = get_word(&args);
     char *pass= get_word(&args);
 
     char buffer[BUFFER_SIZE];
 
-    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+    if(check_uid(uid) == FERROR || check_pass(pass) == FERROR){
+      sprintf(buffer, "ROU NOK\n");
+      send_udp_message(connection, buffer);
+      return;
+    }
 
-    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
 
-    if (check_credencials(name, pass, fs) == 0){
-        if(is_logged_in(name, fs)){
+    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+    if (check_credencials(uid, pass, fs) == 0){
+        if(is_logged_in(uid, fs)){
             delete_file(user_path, "login");
         }
         sprintf(buffer, "ROU OK\n");
