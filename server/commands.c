@@ -421,8 +421,6 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
       free(group_path);
   END_FIIL()
 
-  DEBUG_MSG("%s", groups_buffer);
-
   sprintf(n_str, "%d", n_subscribed_groups);
 
   char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + strlen(groups_buffer)));
