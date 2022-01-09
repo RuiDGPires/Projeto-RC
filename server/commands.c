@@ -261,14 +261,16 @@ void groups(connection_context_t *connection, char *args, char *fs){
     FOR_ITEM_IN_LIST(char *group, group_list)
         char *top = &msg_buffer[strlen(msg_buffer)];
 
-        char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(groups_path) + strlen(group) + 3));
+        char *group_path = (char *) malloc(sizeof(char) * (strlen(groups_path) + strlen(group)));
+        sprintf(group_path, "%s/%s", groups_path, group);
 
-        sprintf(group_msgs_path, "%s/%s/", groups_path, group);
+        char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(group_path) + 8));
+        sprintf(group_msgs_path, "%s/MSG/", group_path);
         sll_link_t msg_list = list_subdirectories(group_msgs_path);
 
 
         char *name_path = (char *) malloc(sizeof(char) * (strlen(group_msgs_path) + strlen("name.txt") + 3));
-        sprintf(name_path, "%s/%s", group_msgs_path, "name.txt");
+        sprintf(name_path, "%s/%s", group_path, "name.txt");
         FILE *file = fopen(name_path, "r");
         free(name_path);
 
@@ -280,6 +282,7 @@ void groups(connection_context_t *connection, char *args, char *fs){
         sprintf(top, " %s %s %04ld", group, group_name, sll_size(msg_list));
 
         sll_destroy(&msg_list);
+        free(group_path);
         free(group_msgs_path);
     
     END_FIIL()
@@ -569,5 +572,122 @@ void post(connection_context_t *connection, char *fs){
 }
 
 void retrieve(connection_context_t *connection, char *fs){
+    char uid[UID_SIZE], gid[GID_SIZE], mid_str[MID_SIZE];
+    int fd = connection->tcp_info->fd;
 
+    get_word_fd(fd, uid);
+    get_word_fd(fd, gid);
+    get_word_fd(fd, mid_str);
+    int mid = atoi(mid_str);
+
+    char *group_dir = (char *) malloc(sizeof(char) * (strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid) + 3));
+    sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
+
+    char *msg;
+
+    if (directory_exists(group_dir)){
+        char *msgs_dir = (char *) malloc(sizeof(char) * (strlen(group_dir) + 8)); 
+        sprintf(msgs_dir, "%s/MSG", group_dir);
+
+        sll_link_t msg_list = list_subdirectories(msgs_dir);
+
+        size_t n_msgs = sll_size(msg_list);
+
+        if (mid > n_msgs){ // There are no new messages
+            msg = strdup("RRT EOF 0\n"); 
+            send_tcp_message(connection, msg);
+            free(msg);
+        }else{
+            int new_msgs = n_msgs - mid + 1;
+            dprintf(fd, "RRT OK %d", 20 < new_msgs ? 20: new_msgs); 
+            
+            FOR_ITEM_IN_LIST(char *current_str, msg_list);
+                int current = atoi(current_str);
+                if (current < mid) continue; 
+                if (current >= mid + 20) break;
+
+                char buffer[BUFFER_SIZE*2];
+                sprintf(buffer, " %s ", current_str);
+                
+                char *msg_dir = (char *) malloc(sizeof(char) * strlen(msgs_dir) + 5);
+                sprintf(msg_dir, "%s/%s", msgs_dir,  current_str);
+
+                char *author_path = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("author.txt") + 3));
+                sprintf(author_path, "%s/author.txt", msg_dir);
+                char *text_path = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("text.txt") + 3));
+                sprintf(text_path, "%s/text.txt", msg_dir);
+
+                char author[UID_SIZE];
+
+                FILE *file = fopen(author_path, "r");
+                fread(author, 1, UID_SIZE - 1, file);
+                author[UID_SIZE - 1] = '\0';
+                fclose(file);
+
+                file = fopen(text_path, "r");
+                size_t text_size = get_file_size(file);
+
+                sprintf(&buffer[strlen(buffer)], "%s %ld ", author, text_size);
+
+                write(fd, buffer, strlen(buffer));
+
+                size_t reading_size = 0;
+                for (size_t total_read = 0; total_read < text_size;){
+                    reading_size = (text_size - total_read) > BUFFER_SIZE ? BUFFER_SIZE : (text_size - total_read);
+                    size_t n = fread(buffer, 1, reading_size, file);
+                    if (reading_size <= BUFFER_SIZE) break; // Break before the end so that if there is an anexed file, it gets written at the same time
+                    total_read += n;
+                    write(fd, buffer, n);
+                }
+                fclose(file);
+
+                free(author_path);
+                free(text_path);
+
+                // CHECK IF HAS FILE
+                char *file_dir = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("FILE") + 2));
+                sprintf(file_dir, "%s/FILE", msg_dir);
+
+                if (directory_exists(file_dir)){
+                    sll_link_t file_lst = list_files(file_dir);
+                    
+                    char *file_path = (char *) malloc(sizeof(char) * (strlen(file_dir) + strlen(file_lst->str) + 3));
+                    sprintf(file_path, "%s/%s", file_dir, file_lst->str);
+
+                    DEBUG_MSG("file: %s\n", file_path);
+
+                    FILE *file = fopen(file_path, "r");
+                    size_t file_size = get_file_size(file);
+
+                    char file_size_str[11];
+                    sprintf(file_size_str, "%ld", file_size);
+                    sprintf(&buffer[reading_size], " / %s %s ", file_lst->str, file_size_str);
+                    write(fd, buffer, reading_size + 6 + strlen(file_lst->str) + strlen(file_size_str));
+
+                    char buffer[BUFFER_SIZE];
+                    for (size_t total_read = 0; total_read < file_size;){
+                        size_t reading_size = (file_size - total_read) > BUFFER_SIZE ? BUFFER_SIZE : (file_size - total_read);
+                        size_t n = fread(buffer, 1, reading_size, file);
+                        total_read += n;
+                        write(fd, buffer, n);
+                    }
+
+                    fclose(file);
+
+                    free(file_path);
+                    sll_destroy(&file_lst);
+                }else{
+                    write(fd, buffer, reading_size);
+                }
+                free(msg_dir);
+            END_FIIL();
+            write(fd, "\n", 1);
+        }
+
+        sll_destroy(&msg_list);
+    }else{
+        msg = strdup("RRT NOK\n");
+        send_tcp_message(connection, msg);
+        free(msg);
+    }
 }
