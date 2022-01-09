@@ -322,6 +322,20 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
 
     char msg_buffer[BUFFER_SIZE];
 
+    if(check_uid(uid) == FERROR){
+      sprintf(msg_buffer, "RGS E_USR\n");
+      send_udp_message(connection, msg_buffer);
+      return;
+    } else if(check_gid(gid) == FERROR){
+      sprintf(msg_buffer, "RGS E_GRP\n");
+      send_udp_message(connection, msg_buffer);
+      return;
+    } else if(check_gname(gname) == FERROR){
+      sprintf(msg_buffer, "RGS E_GNAME\n");
+      send_udp_message(connection, msg_buffer);
+      return;
+    }
+
     char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
     sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
 
@@ -368,6 +382,16 @@ void unsubscribe(connection_context_t *connection, char *args, char *fs){
     char *gid = get_word(&args);
 
     char msg_buffer[BUFFER_SIZE];
+
+    if(check_uid(uid) == FERROR){
+      sprintf(msg_buffer, "RGU E_USR\n");
+      send_udp_message(connection, msg_buffer);
+      return;
+    } else if(check_gid(gid) == FERROR){
+      sprintf(msg_buffer, "RGU E_GRP\n");
+      send_udp_message(connection, msg_buffer);
+      return;
+    }
 
     char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid) + 3));
     sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
