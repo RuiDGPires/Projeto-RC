@@ -29,7 +29,7 @@ char *get_word(char *str[]){
 }
 
 size_t get_word_fd(int fd, char str[]){
-  size_t size = str[0] == ' ';
+  size_t size = 0;
 
   for (; read(fd, &str[size], 1) != 0; size++) if (str[size] == ' ' || str[size] == '\0' || str[size] == '\n' ) break;
 

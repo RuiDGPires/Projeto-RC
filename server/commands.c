@@ -7,37 +7,79 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <fcntl.h>
 
-void check_uid(const char str[]){
+#define TSIZE_SIZE 240
+#define FNAME_SIZE 24
+#define FSIZE_SIZE 24
+
+#define SUCCESS 1
+#define WARNING 1
+#define FERROR 0
+
+int check_uid(const char str[]){
+  if (str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size == 5, "Invalid user name size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i])) throw_error("Invalid user name characters");
+    if (!isdigit(str[i])){
+      throw_error("Invalid user name characters");
+      return FERROR;
+    }
+  
+  return size == 5;
 }
 
-void check_pass(const char str[]){
+int check_pass(const char str[]){
+  if (str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size == 8, "Invalid password size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i])) throw_error("Invalid password characters");
+    if (!isdigit(str[i]) && !isalpha(str[i])){
+      throw_error("Invalid password characters");
+      return FERROR;
+    }
+  return size == 8;
 }
 
-void check_gid(const char str[]){
+int check_gid(const char str[]){
+  if (str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size == 2, "Invalid group number size");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i])) throw_error("Invalid group id chars");
+    if (!isdigit(str[i])){
+      throw_error("Invalid group id chars");
+      return FERROR;
+    }
+  return size == 2;
 }
 
-void check_gname(const char str[]){
+int check_gname(const char str[]){
+  if (str == NULL){
+    throw_error("Invalid user name");
+    return FERROR;
+  }
   size_t size = strlen(str);
   ASSERT(size < 24, "Invalid group name length");
 
   for (size_t i = 0; i < size; i++)
-    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_') throw_error("Invalid group name chars");
+    if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_'){
+      throw_error("Invalid group name chars");
+      return FERROR;
+    }
+  return size < 24;
 }
 
 // returns:
@@ -394,7 +436,6 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
   free(groups_path);
 
   sll_destroy(&groups_list);
-
 }
 
 
@@ -451,7 +492,82 @@ void ulist(connection_context_t *connection, char *fs){
 }
 
 void post(connection_context_t *connection, char *fs){
+    DEBUG_MSG_SECTION("PST");
+    DEBUG_MSG("posting\n");
+    char uid[6];
+    char gid[3];
+    gid[2] = '\0';
+    uid[5] = '\0';
 
+    int fd = connection->tcp_info->fd;
+    read_fd(fd, uid, 5);
+    read_fd(fd, NULL, 1); // Throw away space
+    read_fd(fd, gid, 2);
+    read_fd(fd, NULL, 1); // Throw away space
+    
+    char tsize_str[TSIZE_SIZE];
+    get_word_fd(fd, tsize_str);
+
+    int tsize = atoi(tsize_str);
+
+    char *text = (char *) malloc(sizeof(char)*(tsize + 1));
+    read_fd(fd, text, tsize); 
+    text[tsize] = '\0';
+    read_fd(fd, NULL, 1); // Throw away space
+
+    
+    char msg_buffer[BUFFER_SIZE];
+
+    char *group_dir = (char *) malloc(sizeof(char) * (strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid)  + 3));
+    sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
+
+    if (directory_exists(group_dir)){
+        char *msgs_dir = (char *) malloc(sizeof(char) * (strlen(group_dir) + strlen("MSG") + 2));
+        sprintf(msgs_dir, "%s/MSG", group_dir);
+
+        sll_link_t msg_list = list_subdirectories(msgs_dir);
+        size_t msg_id = sll_size(msg_list) + 1;
+        sll_destroy(&msg_list);
+
+        char msg_id_str[5];
+        sprintf(msg_id_str, "%04ld", msg_id);
+        create_directory(msgs_dir, msg_id_str);
+
+        char *msg_dir = (char *) malloc(sizeof(char)*(strlen(msgs_dir) + 7));
+        sprintf(msg_dir, "%s/%s", msgs_dir, msg_id_str);
+
+        create_file(msg_dir, "author.txt", uid);
+        create_file(msg_dir, "text.txt", text);
+
+        char fname[FNAME_SIZE];
+
+        fcntl(fd, F_SETFL, O_NONBLOCK);
+        if (get_word_fd(fd, fname)){ // if there is a file
+            fcntl(fd, F_SETFL, ~O_NONBLOCK);
+
+            create_directory(msg_dir, "FILE");
+            char *file_path = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("FILE") + strlen(fname) + 5));
+            sprintf(file_path, "%s/FILE/%s", msg_dir, fname);
+
+            char fsize_str[FSIZE_SIZE];
+            get_word_fd(fd, fsize_str);
+            int fsize = atoi(fsize_str);
+
+            char *file_data = (char *) malloc(sizeof(char)*(fsize + 1));
+            read_fd(fd, file_data, fsize); 
+            FILE *file = fopen(file_path, "w");
+            fwrite(file_data, 1, fsize, file);
+            fclose(file);
+        }
+        sprintf(msg_buffer, "RPT OK\n");
+    }else{
+        sprintf(msg_buffer, "RPT NOK\n");
+    }
+
+    fcntl(fd, F_SETFL, ~O_NONBLOCK);
+    send_tcp_message(connection, msg_buffer);
 }
+
 void retrieve(connection_context_t *connection, char *fs){
+
 }
