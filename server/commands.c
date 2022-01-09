@@ -29,7 +29,7 @@ int check_uid(const char str[]){
   return size == 5;
 }
 
-void check_pass(const char str[]){
+int check_pass(const char str[]){
   if (str == NULL){
     throw_error("Invalid user name");
     return FERROR;
@@ -45,7 +45,7 @@ void check_pass(const char str[]){
   return size == 8;
 }
 
-void check_gid(const char str[]){
+int check_gid(const char str[]){
   if (str == NULL){
     throw_error("Invalid user name");
     return FERROR;
@@ -61,7 +61,7 @@ void check_gid(const char str[]){
   return size == 2;
 }
 
-void check_gname(const char str[]){
+int check_gname(const char str[]){
   if (str == NULL){
     throw_error("Invalid user name");
     return FERROR;
