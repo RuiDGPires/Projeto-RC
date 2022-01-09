@@ -129,14 +129,20 @@ bool is_logged_in(const char name[], const char fs[]){
 }
 
 void reg(connection_context_t *connection, char *args, char *fs){
-  char *name = get_word(&args);
+  char *uid = get_word(&args);
   char *pass= get_word(&args);
 
   char buffer[BUFFER_SIZE];
 
-  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+  if (check_uid(uid) == FERROR || check_uid(pass) == FERROR){
+    sprintf(buffer, "RRG NOK\n");
+    send_udp_message(connection, buffer);
+    return;
+  }
 
-  sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+  char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
+
+  sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
 
   if (directory_exists(user_path)){
     sprintf(buffer, "RRG DUP\n");
