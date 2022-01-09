@@ -145,7 +145,7 @@ void send_tcp_message_size(connection_context_t *context, const char message[], 
   init_tcp_connection(context);
 
   context->tcp_info->addrlen = sizeof(context->tcp_info->addr);
-  size_t size = strlen(message), n;
+  size_t n;
 
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
   ASSERT(n != -1, "Unable connect to server");
@@ -193,7 +193,7 @@ void send_tcp_message_no_answer(connection_context_t *context, const char *messa
   init_tcp_connection(context);
 
   context->tcp_info->addrlen = sizeof(context->tcp_info->addr);
-  size_t size = strlen(message), n;
+  size_t  n;
 
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
   ASSERT(n != -1, "Unable connect to server");
