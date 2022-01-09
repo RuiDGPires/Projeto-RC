@@ -239,17 +239,23 @@ void login_(connection_context_t *connection, char *args, char *fs){
 }
 
 void logout_(connection_context_t *connection, char *args, char *fs){
-    char *name = get_word(&args);
+    char *uid = get_word(&args);
     char *pass= get_word(&args);
 
     char buffer[BUFFER_SIZE];
 
-    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
+    if(check_uid(uid) == FERROR || check_pass(pass) == FERROR){
+      sprintf(buffer, "ROU NOK\n");
+      send_udp_message(connection, buffer);
+      return;
+    }
 
-    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);
+    char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
 
-    if (check_credencials(name, pass, fs) == 0){
-        if(is_logged_in(name, fs)){
+    sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+    if (check_credencials(uid, pass, fs) == 0){
+        if(is_logged_in(uid, fs)){
             delete_file(user_path, "login");
         }
         sprintf(buffer, "ROU OK\n");
