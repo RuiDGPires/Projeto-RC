@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <signal.h>
+#include <errno.h>
 
 #define CLEAR(var) var[0] = '\0'
 #define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)
@@ -90,10 +92,14 @@ int main(int argc, char *argv[]){
 
   char buffer_udp[BUFFER_SIZE];
 
-  int maxfd1;
+  int maxfd1, ret;
   fd_set rset;
 
+  struct sigaction act;
+  memset(&act, 0, sizeof act);
+  act.sa_handler=SIG_IGN;
 
+  if (sigaction(SIGCHLD, &act, NULL)==-1)/*error*/exit(1);
 
   parse_args(dsport, &verbose, argc, argv);
 
@@ -133,6 +139,18 @@ int main(int argc, char *argv[]){
             close(context->tcp_info->fd);
             DEBUG_MSG("Close Fork %d\n", getpid());
             exit(0);
+        }
+        if(fork() == 1){
+          DEBUG_MSG("Error Creating Fork %d\n", getpid());
+          exit(1);
+        }
+
+        do ret=close(newfd); while(ret==-1 && errno==EINTR);
+
+        if(ret==-1){
+          /*error*/
+          DEBUG_MSG("Error \n");
+          exit(1);
         }
       }
     }
