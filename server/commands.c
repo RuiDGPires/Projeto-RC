@@ -355,14 +355,18 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
             sll_link_t group_list = list_subdirectories(groups_dir);
             int new_id = sll_size(group_list) + 1;
 
-            sprintf(group_dir, "%s/%02d", groups_dir, new_id);
+            if (new_id > 99){
+                sprintf(msg_buffer, "RGS E_FULL\n");
+            }else{
+                sprintf(group_dir, "%s/%02d", groups_dir, new_id);
 
-            create_directory_abs(group_dir);
-            create_directory(group_dir, "MSG");
-            create_file(group_dir, "name.txt", gname);
+                create_directory_abs(group_dir);
+                create_directory(group_dir, "MSG");
+                create_file(group_dir, "name.txt", gname);
 
-            sll_destroy(&group_list);
-            sprintf(gid, "%02d", new_id);
+                sll_destroy(&group_list);
+                sprintf(gid, "%02d", new_id);
+            }
         }
 
         sprintf(group_dir, "%s/%s", groups_dir, gid);
@@ -370,8 +374,18 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
         if (!(directory_exists(groups_dir))){
             sprintf(msg_buffer, "RGS E_GRP\n");
         }else{
-            create_file(group_dir, uid, "");
-            sprintf(msg_buffer, "RGS OK\n");
+            char *group_name_path = malloc(sizeof(char) * (strlen(group_dir) + strlen("name.txt") + 2));
+            sprintf(group_name_path, "%s/name.txt", group_dir);
+            char group_name[BUFFER_SIZE];
+            FILE *file = fopen(group_name_path, "r");
+            fscanf(file, "%s", group_name);
+            fclose(file);
+            if (strcmp(group_name, gname) != 0){
+                sprintf(msg_buffer, "RGS E_GNAME\n");
+            }else{
+                create_file(group_dir, uid, NULL);
+                sprintf(msg_buffer, "RGS OK\n");
+            }
         }
 
         free(group_dir);
