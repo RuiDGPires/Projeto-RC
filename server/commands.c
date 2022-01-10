@@ -506,7 +506,6 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
 
     free(user_dir);
     free(groups_buffer);
-    free(msg_buffer);
     free(groups_path);
     sll_destroy(&groups_list);
 
