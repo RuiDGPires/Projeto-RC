@@ -480,7 +480,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
 
   sprintf(n_str, "%d", n_subscribed_groups);
 
-  char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + strlen(groups_buffer)));
+  char *msg_buffer = (char *) malloc(sizeof(char)*(6 + strlen(n_str) + strlen(groups_buffer)));
 
   sprintf(msg_buffer, "RGM %s%s\n", n_str, groups_buffer);
 
