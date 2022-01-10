@@ -363,14 +363,18 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
             sll_link_t group_list = list_subdirectories(groups_dir);
             int new_id = sll_size(group_list) + 1;
 
-            sprintf(group_dir, "%s/%02d", groups_dir, new_id);
+            if (new_id > 99){
+                sprintf(msg_buffer, "RGS E_FULL\n");
+            }else{
+                sprintf(group_dir, "%s/%02d", groups_dir, new_id);
 
-            create_directory_abs(group_dir);
-            create_directory(group_dir, "MSG");
-            create_file(group_dir, "name.txt", gname);
+                create_directory_abs(group_dir);
+                create_directory(group_dir, "MSG");
+                create_file(group_dir, "name.txt", gname);
 
-            sll_destroy(&group_list);
-            sprintf(gid, "%02d", new_id);
+                sll_destroy(&group_list);
+                sprintf(gid, "%02d", new_id);
+            }
         }
 
         sprintf(group_dir, "%s/%s", groups_dir, gid);
@@ -378,8 +382,20 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
         if (!(directory_exists(groups_dir))){
             sprintf(msg_buffer, "RGS E_GRP\n");
         }else{
-            create_file(group_dir, uid, "");
-            sprintf(msg_buffer, "RGS OK\n");
+            char *group_name_path = malloc(sizeof(char) * (strlen(group_dir) + strlen("name.txt") + 2));
+            sprintf(group_name_path, "%s/name.txt", group_dir);
+            char group_name[BUFFER_SIZE];
+            FILE *file = fopen(group_name_path, "r");
+            fscanf(file, "%s", group_name);
+            free(group_name_path);
+            fclose(file);
+            if (strcmp(group_name, gname) != 0){
+                sprintf(msg_buffer, "RGS E_GNAME\n");
+            }else{
+                create_file(group_dir, uid, NULL);
+                sprintf(msg_buffer, "RGS OK\n");
+            }
+
         }
 
         free(group_dir);
@@ -442,6 +458,29 @@ char *unsubscribe(connection_context_t *connection, char *args, char *fs){
 char *my_groups(connection_context_t *connection, char *args, char *fs){
   char *uid = get_word(&args);
 
+  char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
+  sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+  if (!(directory_exists(user_dir))){
+    char msg_buffer[BUFFER_SIZE];
+    sprintf(msg_buffer, "RGS E_USR\n");
+
+    send_udp_message(connection, msg_buffer);
+
+    free(user_dir);
+
+    return;
+  }else if (!(is_logged_in(uid, fs))){
+    char msg_buffer[BUFFER_SIZE];
+    sprintf(msg_buffer, "RGS E_USR\n");
+
+    send_udp_message(connection, msg_buffer);
+
+    free(user_dir);
+
+    return;
+  }
+
   char *groups_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 3));
   sprintf(groups_path, "%s/%s/", fs, SERVER_GROUPS_NAME);
 
@@ -449,28 +488,23 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
 
   int n_subscribed_groups = 0;
 
-  char n_str[BUFFER_SIZE];
-
   char *groups_buffer = (char *) malloc(sizeof(char)*(sll_size(groups_list)*33));
+  groups_buffer[0] = '\0';
 
   FOR_ITEM_IN_LIST(char* group, groups_list)
-
       char *group_path = (char *) malloc(sizeof(char) * (strlen(groups_path) + strlen(group) + 2));
 
       sprintf(group_path, "%s/%s", groups_path, group);
 
       if (file_exists(group_path, uid)){
-
         n_subscribed_groups++;
 
         char *top = &groups_buffer[strlen(groups_buffer)];
 
         char *groups_gid_path = (char *) malloc(sizeof(char)*(strlen(groups_path) + strlen(group) + 2));
-
         sprintf(groups_gid_path, "%s/%s", groups_path, group);
 
         char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(groups_gid_path) + 5));
-
         sprintf(group_msgs_path, "%s/MSG", groups_gid_path);
 
         sll_link_t msg_list = list_subdirectories(group_msgs_path);
@@ -478,7 +512,6 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
         char *name_path = (char *) malloc(sizeof(char) * (strlen(groups_gid_path) + strlen("name.txt") + 3));
         sprintf(name_path, "%s/%s", groups_gid_path, "name.txt");
         FILE *file = fopen(name_path, "r");
-        free(name_path);
 
         char group_name[25];
 
@@ -489,25 +522,41 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
 
         sll_destroy(&msg_list);
         free(groups_gid_path);
-        free(group_msgs_path);
+        free(group_msgs_path);        
+        free(name_path);
       }
+
       free(group_path);
+
   END_FIIL()
 
+  if(n_subscribed_groups == 0){
+
+    char msg_buffer[BUFFER_SIZE];
+    sprintf(msg_buffer, "RGM 0\n");
+
+    send_udp_message(connection, msg_buffer);
+
+    free(user_dir);
+    free(groups_buffer);
+    free(groups_path);
+    sll_destroy(&groups_list);
+
+    return;
+  }
+
+  char n_str[BUFFER_SIZE];
   sprintf(n_str, "%d", n_subscribed_groups);
 
-  char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + strlen(groups_buffer)));
-
+  char *msg_buffer = (char *) malloc(sizeof(char)*(6 + strlen(n_str) + strlen(groups_buffer)));
   sprintf(msg_buffer, "RGM %s%s\n", n_str, groups_buffer);
 
   send_udp_message(connection, msg_buffer);
 
+  free(user_dir);
   free(groups_buffer);
-
   free(msg_buffer);
-
   free(groups_path);
-
   sll_destroy(&groups_list);
 
   return uid;
