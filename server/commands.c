@@ -458,11 +458,11 @@ char *unsubscribe(connection_context_t *connection, char *args, char *fs){
 char *my_groups(connection_context_t *connection, char *args, char *fs){
   char *uid = get_word(&args);
 
-  char msg_buffer[BUFFER_SIZE];
+  char buffer[BUFFER_SIZE];
 
   if(check_uid(uid) == FERROR){
-      sprintf(msg_buffer, "RGM E_USR\n");
-      send_udp_message(connection, msg_buffer);
+      sprintf(buffer, "RGM E_USR\n");
+      send_udp_message(connection, buffer);
       return NULL;
   }
 
@@ -470,6 +470,7 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
   sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
 
   if (!(directory_exists(user_dir))){
+    char msg_buffer[BUFFER_SIZE];
     sprintf(msg_buffer, "RGS E_USR\n");
 
     send_udp_message(connection, msg_buffer);
@@ -478,6 +479,7 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
 
     return uid;
   }else if (!(is_logged_in(uid, fs))){
+    char msg_buffer[BUFFER_SIZE];
     sprintf(msg_buffer, "RGS E_USR\n");
 
     send_udp_message(connection, msg_buffer);
