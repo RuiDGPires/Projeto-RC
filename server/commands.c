@@ -457,6 +457,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
   int n_subscribed_groups = 0;
 
   char *groups_buffer = (char *) malloc(sizeof(char)*(sll_size(groups_list)*33));
+  groups_buffer[0] = '\0';
 
   FOR_ITEM_IN_LIST(char* group, groups_list)
       char *group_path = (char *) malloc(sizeof(char) * (strlen(groups_path) + strlen(group) + 2));
@@ -515,7 +516,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
   char n_str[BUFFER_SIZE];
   sprintf(n_str, "%d", n_subscribed_groups);
 
-  char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + strlen(groups_buffer)));
+  char *msg_buffer = (char *) malloc(sizeof(char)*(6 + strlen(n_str) + strlen(groups_buffer)));
   sprintf(msg_buffer, "RGM %s%s\n", n_str, groups_buffer);
 
   send_udp_message(connection, msg_buffer);
