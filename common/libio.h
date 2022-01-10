@@ -23,5 +23,6 @@
 void __attribute__((format(printf, 1, 2))) throw_error(const char *fmt, ...);
 void __attribute__((format(printf, 1, 2))) warning(const char *fmt, ...);
 void __attribute__((format(printf, 1, 2))) success(const char *fmt, ...);
+void __attribute__((format(printf, 1, 2))) info(const char *fmt, ...);
 
 #endif

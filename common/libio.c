@@ -50,3 +50,14 @@ void success(const char *fmt, ...){
 
   va_end(args);
 }
+
+void info(const char *fmt, ...){
+  va_list args;
+  va_start(args, fmt);
+
+  printf(NC);
+  vprintf(fmt, args);
+  printf("\n%s", NC);
+
+  va_end(args);
+}
