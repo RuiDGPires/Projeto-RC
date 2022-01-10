@@ -311,6 +311,8 @@ void groups(connection_context_t *connection, char *args, char *fs){
     
     END_FIIL()
 
+    msg_buffer[strlen(msg_buffer)] = '\n';
+    msg_buffer[strlen(msg_buffer)+1] = '\0';
     send_udp_message(connection, msg_buffer);
 
     free(msg_buffer);
@@ -405,23 +407,21 @@ void unsubscribe(connection_context_t *connection, char *args, char *fs){
         if (directory_exists(group_dir)){
             if (file_exists(group_dir, uid)){
                 delete_file(group_dir, uid);
-                sprintf(msg_buffer, "RGU OK");
+                sprintf(msg_buffer, "RGU OK\n");
             }else{
-                sprintf(msg_buffer, "RGU NOK");
+                sprintf(msg_buffer, "RGU NOK\n");
             }
         }else{
-            sprintf(msg_buffer, "RGU E_GRP");
+            sprintf(msg_buffer, "RGU E_GRP\n");
         }
         free(group_dir);
     }else{
-        sprintf(msg_buffer, "RGU E_USR");
+        sprintf(msg_buffer, "RGU E_USR\n");
     }
-
-    
      
     free(user_dir);
     send_udp_message(connection, msg_buffer);
-}
+    }
 
 void my_groups(connection_context_t *connection, char *args, char *fs){
   char *uid = get_word(&args);
@@ -482,7 +482,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
 
   char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + strlen(groups_buffer)));
 
-  sprintf(msg_buffer, "RGM %s%s", n_str, groups_buffer);
+  sprintf(msg_buffer, "RGM %s%s\n", n_str, groups_buffer);
 
   send_udp_message(connection, msg_buffer);
 
