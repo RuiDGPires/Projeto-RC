@@ -561,7 +561,7 @@ int retrieve(connection_context_t *connection, char *args){
 
       // Get message size
       get_word_fd(connection->tcp_info->fd, buffer);
-      int msg_size = atoi(buffer) - 1; 
+      int msg_size = atoi(buffer); 
 
       DEBUG_MSG("Message size: %d\n", msg_size);
       // Get message
@@ -574,7 +574,7 @@ int retrieve(connection_context_t *connection, char *args){
       msg[msg_size] = '\0';
 
       // get rid of trailing ' '
-      (void) read(connection->tcp_info->fd, buffer, 2);
+      (void) read(connection->tcp_info->fd, buffer, 1);
 
       bool has_file = 0;
       char file_name[BUFFER_SIZE];
