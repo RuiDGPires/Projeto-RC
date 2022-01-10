@@ -379,6 +379,7 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
             char group_name[BUFFER_SIZE];
             FILE *file = fopen(group_name_path, "r");
             fscanf(file, "%s", group_name);
+            free(group_name_path);
             fclose(file);
             if (strcmp(group_name, gname) != 0){
                 sprintf(msg_buffer, "RGS E_GNAME\n");
@@ -386,6 +387,7 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
                 create_file(group_dir, uid, NULL);
                 sprintf(msg_buffer, "RGS OK\n");
             }
+
         }
 
         free(group_dir);
