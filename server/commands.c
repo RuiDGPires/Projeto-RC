@@ -436,6 +436,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
   char n_str[BUFFER_SIZE];
 
   char *groups_buffer = (char *) malloc(sizeof(char)*(sll_size(groups_list)*33));
+  groups_buffer[0] = '\0';
 
   FOR_ITEM_IN_LIST(char* group, groups_list)
 
