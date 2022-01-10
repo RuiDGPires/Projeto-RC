@@ -437,6 +437,21 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
 
   char *groups_buffer = (char *) malloc(sizeof(char)*(sll_size(groups_list)*33));
 
+  char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
+  sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
+
+  if (!(directory_exists(user_dir))){
+    char msg_buffer[BUFFER_SIZE];
+    sprintf(msg_buffer, "RGS E_USR\n");
+    send_udp_message(connection, msg_buffer);
+    return;
+  }else if (!(is_logged_in(uid, fs))){
+    char msg_buffer[BUFFER_SIZE];
+    sprintf(msg_buffer, "RGS E_USR\n");
+    send_udp_message(connection, msg_buffer);
+    return;
+  }
+
   FOR_ITEM_IN_LIST(char* group, groups_list)
 
       char *group_path = (char *) malloc(sizeof(char) * (strlen(groups_path) + strlen(group) + 2));
@@ -478,6 +493,13 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
       free(group_path);
   END_FIIL()
 
+  if(n_subscribed_groups == 0){
+    char msg_buffer[BUFFER_SIZE];
+    sprintf(msg_buffer, "RGM 0\n");
+    send_udp_message(connection, msg_buffer);
+    return;
+  }
+
   sprintf(n_str, "%d", n_subscribed_groups);
 
   char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + strlen(groups_buffer)));
@@ -486,6 +508,8 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
 
   send_udp_message(connection, msg_buffer);
 
+  free(user_dir);
+  
   free(groups_buffer);
 
   free(msg_buffer);
