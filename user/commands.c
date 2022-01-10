@@ -565,13 +565,13 @@ int retrieve(connection_context_t *connection, char *args){
 
       DEBUG_MSG("Message size: %d\n", msg_size);
       // Get message
-      char *msg = (char *) malloc(sizeof(char)*msg_size);
+      char *msg = (char *) malloc(sizeof(char)*msg_size + 1);
       size_t total_read_size = 0;
       while(total_read_size != msg_size)
         total_read_size += read(connection->tcp_info->fd, &msg[total_read_size], msg_size-total_read_size);
 
-      DEBUG_MSG("Text from message: %s\n", msg);
       msg[msg_size] = '\0';
+      DEBUG_MSG("Text from message: %s\n", msg);
 
       // get rid of trailing ' '
       (void) read(connection->tcp_info->fd, buffer, 1);
