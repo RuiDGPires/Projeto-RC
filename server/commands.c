@@ -469,7 +469,7 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
 
     free(user_dir);
 
-    return;
+    return uid;
   }else if (!(is_logged_in(uid, fs))){
     char msg_buffer[BUFFER_SIZE];
     sprintf(msg_buffer, "RGS E_USR\n");
@@ -478,7 +478,7 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
 
     free(user_dir);
 
-    return;
+    return uid;
   }
 
   char *groups_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 3));
@@ -542,7 +542,7 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
     free(groups_path);
     sll_destroy(&groups_list);
 
-    return;
+    return uid;
   }
 
   char n_str[BUFFER_SIZE];
