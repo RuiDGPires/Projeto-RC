@@ -1,5 +1,6 @@
 #include "../common/debug.h"
 #include "../common/util.h"
+#include "../common/constants.h"
 #include "commands.h"
 #include "file_management.h"
 #include <string.h>
@@ -9,13 +10,6 @@
 #include <ctype.h>
 #include <fcntl.h>
 
-#define TSIZE_SIZE 240
-#define FNAME_SIZE 24
-#define FSIZE_SIZE 24
-
-#define SUCCESS 1
-#define WARNING 1
-#define FERROR 0
 
 int check_uid(const char str[]){
   if (str == NULL){
@@ -128,7 +122,7 @@ bool is_logged_in(const char name[], const char fs[]){
     return (file_exists(user_path, "login"));
 }
 
-void reg(connection_context_t *connection, char *args, char *fs){
+char *reg(connection_context_t *connection, char *args, char *fs){
   char *uid = get_word(&args);
   char *pass= get_word(&args);
 
@@ -137,7 +131,7 @@ void reg(connection_context_t *connection, char *args, char *fs){
   if (check_uid(uid) == FERROR || check_pass(pass) == FERROR){
     sprintf(buffer, "RRG NOK\n");
     send_udp_message(connection, buffer);
-    return;
+    return NULL;
   }
 
   char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
@@ -155,9 +149,11 @@ void reg(connection_context_t *connection, char *args, char *fs){
   send_udp_message(connection, buffer);
 
   free(user_path);
+
+  return uid;
 }
 
-void unregister(connection_context_t *connection, char *args, char *fs){
+char *unregister(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *pass= get_word(&args);
 
@@ -166,7 +162,7 @@ void unregister(connection_context_t *connection, char *args, char *fs){
     if(check_uid(uid) == FERROR || check_pass(pass) == FERROR){
       sprintf(buffer, "RUN NOK\n");
       send_udp_message(connection, buffer);
-      return;
+      return NULL;
     }
 
     char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
@@ -205,9 +201,11 @@ void unregister(connection_context_t *connection, char *args, char *fs){
 
     send_udp_message(connection, buffer);
     free(user_path);
+
+    return uid;
 }
 
-void login_(connection_context_t *connection, char *args, char *fs){
+char *login_(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *pass= get_word(&args);
 
@@ -216,7 +214,7 @@ void login_(connection_context_t *connection, char *args, char *fs){
     if(check_uid(uid) == FERROR || check_pass(pass) == FERROR){
       sprintf(buffer, "RLO NOK\n");
       send_udp_message(connection, buffer);
-      return;
+      return NULL;
     }
 
     char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
@@ -236,9 +234,11 @@ void login_(connection_context_t *connection, char *args, char *fs){
     free(user_path);
 
     send_udp_message(connection, buffer);
+
+    return uid;
 }
 
-void logout_(connection_context_t *connection, char *args, char *fs){
+char *logout_(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *pass= get_word(&args);
 
@@ -247,7 +247,7 @@ void logout_(connection_context_t *connection, char *args, char *fs){
     if(check_uid(uid) == FERROR || check_pass(pass) == FERROR){
       sprintf(buffer, "ROU NOK\n");
       send_udp_message(connection, buffer);
-      return;
+      return NULL;
     }
 
     char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid)) + 3);
@@ -264,6 +264,8 @@ void logout_(connection_context_t *connection, char *args, char *fs){
     }
 
     send_udp_message(connection, buffer);
+
+    return uid;
 }
 
 void groups(connection_context_t *connection, char *args, char *fs){
@@ -320,7 +322,7 @@ void groups(connection_context_t *connection, char *args, char *fs){
     sll_destroy(&group_list);
 }
 
-void subscribe(connection_context_t *connection, char *args, char *fs){
+char *subscribe(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *gid = get_word(&args);
     char *gname = get_word(&args);
@@ -330,15 +332,15 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
     if(check_uid(uid) == FERROR){
       sprintf(msg_buffer, "RGS E_USR\n");
       send_udp_message(connection, msg_buffer);
-      return;
+      return NULL;
     } else if(check_gid(gid) == FERROR){
       sprintf(msg_buffer, "RGS E_GRP\n");
       send_udp_message(connection, msg_buffer);
-      return;
+      return NULL;
     } else if(check_gname(gname) == FERROR){
       sprintf(msg_buffer, "RGS E_GNAME\n");
       send_udp_message(connection, msg_buffer);
-      return;
+      return NULL;
     }
 
     char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
@@ -355,14 +357,18 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
             sll_link_t group_list = list_subdirectories(groups_dir);
             int new_id = sll_size(group_list) + 1;
 
-            sprintf(group_dir, "%s/%02d", groups_dir, new_id);
+            if (new_id > 99){
+                sprintf(msg_buffer, "RGS E_FULL\n");
+            }else{
+                sprintf(group_dir, "%s/%02d", groups_dir, new_id);
 
-            create_directory_abs(group_dir);
-            create_directory(group_dir, "MSG");
-            create_file(group_dir, "name.txt", gname);
+                create_directory_abs(group_dir);
+                create_directory(group_dir, "MSG");
+                create_file(group_dir, "name.txt", gname);
 
-            sll_destroy(&group_list);
-            sprintf(gid, "%02d", new_id);
+                sll_destroy(&group_list);
+                sprintf(gid, "%02d", new_id);
+            }
         }
 
         sprintf(group_dir, "%s/%s", groups_dir, gid);
@@ -370,8 +376,20 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
         if (!(directory_exists(groups_dir))){
             sprintf(msg_buffer, "RGS E_GRP\n");
         }else{
-            create_file(group_dir, uid, "");
-            sprintf(msg_buffer, "RGS OK\n");
+            char *group_name_path = malloc(sizeof(char) * (strlen(group_dir) + strlen("name.txt") + 2));
+            sprintf(group_name_path, "%s/name.txt", group_dir);
+            char group_name[BUFFER_SIZE];
+            FILE *file = fopen(group_name_path, "r");
+            fscanf(file, "%s", group_name);
+            free(group_name_path);
+            fclose(file);
+            if (strcmp(group_name, gname) != 0){
+                sprintf(msg_buffer, "RGS E_GNAME\n");
+            }else{
+                create_file(group_dir, uid, NULL);
+                sprintf(msg_buffer, "RGS OK\n");
+            }
+
         }
 
         free(group_dir);
@@ -380,9 +398,13 @@ void subscribe(connection_context_t *connection, char *args, char *fs){
 
     send_udp_message(connection, msg_buffer);
     free(user_dir);
+
+    char *uid_gid = (char *) malloc(sizeof(char)*(UID_SIZE + GID_SIZE + 3));
+    sprintf(uid_gid, "%s | %s", uid, gid);
+    return uid_gid;
 }
 
-void unsubscribe(connection_context_t *connection, char *args, char *fs){
+char *unsubscribe(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *gid = get_word(&args);
 
@@ -391,11 +413,11 @@ void unsubscribe(connection_context_t *connection, char *args, char *fs){
     if(check_uid(uid) == FERROR){
       sprintf(msg_buffer, "RGU E_USR\n");
       send_udp_message(connection, msg_buffer);
-      return;
+      return NULL;
     } else if(check_gid(gid) == FERROR){
       sprintf(msg_buffer, "RGU E_GRP\n");
       send_udp_message(connection, msg_buffer);
-      return;
+      return NULL;
     }
 
     char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(uid) + 3));
@@ -421,10 +443,22 @@ void unsubscribe(connection_context_t *connection, char *args, char *fs){
      
     free(user_dir);
     send_udp_message(connection, msg_buffer);
-    }
 
-void my_groups(connection_context_t *connection, char *args, char *fs){
+    char *uid_gid = (char *) malloc(sizeof(char)*(UID_SIZE + GID_SIZE + 3));
+    sprintf(uid_gid, "%s | %s", uid, gid);
+    return uid_gid;
+}
+
+char *my_groups(connection_context_t *connection, char *args, char *fs){
   char *uid = get_word(&args);
+
+  char buffer[BUFFER_SIZE];
+
+  if(check_uid(uid) == FERROR){
+      sprintf(buffer, "RGM E_USR\n");
+      send_udp_message(connection, buffer);
+      return NULL;
+  }
 
   char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
   sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
@@ -437,7 +471,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
 
     free(user_dir);
 
-    return;
+    return uid;
   }else if (!(is_logged_in(uid, fs))){
     char msg_buffer[BUFFER_SIZE];
     sprintf(msg_buffer, "RGS E_USR\n");
@@ -446,7 +480,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
 
     free(user_dir);
 
-    return;
+    return uid;
   }
 
   char *groups_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 3));
@@ -510,7 +544,7 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
     free(groups_path);
     sll_destroy(&groups_list);
 
-    return;
+    return uid;
   }
 
   char n_str[BUFFER_SIZE];
@@ -527,10 +561,11 @@ void my_groups(connection_context_t *connection, char *args, char *fs){
   free(groups_path);
   sll_destroy(&groups_list);
 
+  return uid;
 }
 
 
-void ulist(connection_context_t *connection, char *fs){
+char *ulist(connection_context_t *connection, char *fs){
     char gid[3];
     gid[2] = '\0';
 
@@ -538,6 +573,13 @@ void ulist(connection_context_t *connection, char *fs){
     read_fd(fd, gid, 2);
 
     char *msg;
+
+    if(check_gid(gid) == FERROR){
+      msg = (char *) malloc (sizeof(char)*(strlen("ERR") + 1));
+      sprintf(msg, "ERR\n");
+      send_tcp_message(connection, msg);
+      return NULL;
+    }
 
     char *group_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid) + 3));
     sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
@@ -580,9 +622,13 @@ void ulist(connection_context_t *connection, char *fs){
     send_tcp_message(connection, msg);
 
     free(msg);
+
+    char *_gid = (char *) malloc(sizeof(char *) * strlen(gid));
+    sprintf(_gid, "%s", gid);
+    return _gid;
 }
 
-void post(connection_context_t *connection, char *fs){
+char *post(connection_context_t *connection, char *fs){
     DEBUG_MSG_SECTION("PST");
     DEBUG_MSG("posting\n");
     char uid[6];
@@ -595,6 +641,13 @@ void post(connection_context_t *connection, char *fs){
     read_fd(fd, NULL, 1); // Throw away space
     read_fd(fd, gid, 2);
     read_fd(fd, NULL, 1); // Throw away space
+
+    if(check_uid(uid) == FERROR || check_gid(gid) == FERROR){
+      char *msg = (char *)malloc(sizeof(char)*(strlen("RPT NOK") + 1));
+      sprintf(msg, "RPT NOK\n");
+      send_tcp_message(connection, msg);
+      return NULL;
+    }
     
     char tsize_str[TSIZE_SIZE];
     get_word_fd(fd, tsize_str);
@@ -604,7 +657,6 @@ void post(connection_context_t *connection, char *fs){
     char *text = (char *) malloc(sizeof(char)*(tsize + 1));
     read_fd(fd, text, tsize); 
     text[tsize] = '\0';
-    read_fd(fd, NULL, 1); // Throw away space
 
     
     char msg_buffer[BUFFER_SIZE];
@@ -632,9 +684,10 @@ void post(connection_context_t *connection, char *fs){
 
         char fname[FNAME_SIZE];
 
-        fcntl(fd, F_SETFL, O_NONBLOCK);
-        if (get_word_fd(fd, fname)){ // if there is a file
-            fcntl(fd, F_SETFL, ~O_NONBLOCK);
+        char c;
+        read(fd, &c, 1);
+        if (c == ' '){ // if there is a file
+            get_word_fd(fd, fname);
 
             create_directory(msg_dir, "FILE");
             char *file_path = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("FILE") + strlen(fname) + 5));
@@ -655,11 +708,14 @@ void post(connection_context_t *connection, char *fs){
         sprintf(msg_buffer, "RPT NOK\n");
     }
 
-    fcntl(fd, F_SETFL, ~O_NONBLOCK);
     send_tcp_message(connection, msg_buffer);
+
+    char *uid_gid = (char *) malloc(sizeof(char)*(UID_SIZE + GID_SIZE + 3));
+    sprintf(uid_gid, "%s | %s", uid, gid);
+    return uid_gid;
 }
 
-void retrieve(connection_context_t *connection, char *fs){
+char *retrieve(connection_context_t *connection, char *fs){
     char uid[UID_SIZE], gid[GID_SIZE], mid_str[MID_SIZE];
     int fd = connection->tcp_info->fd;
 
@@ -667,6 +723,13 @@ void retrieve(connection_context_t *connection, char *fs){
     get_word_fd(fd, gid);
     get_word_fd(fd, mid_str);
     int mid = atoi(mid_str);
+
+    if(check_uid(uid) == FERROR || check_gid(gid) == FERROR){
+      //Should we also check mid
+      char *msg_buffer = (char *)malloc(sizeof(char)*(strlen("RRT NOK") + 1));
+      sprintf(msg_buffer, "RRT NOK\n");
+      send_tcp_message(connection, msg_buffer);
+    }
 
     char *group_dir = (char *) malloc(sizeof(char) * (strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid) + 3));
     sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
@@ -788,4 +851,8 @@ void retrieve(connection_context_t *connection, char *fs){
         send_tcp_message(connection, msg);
         free(msg);
     }
+
+    char *uid_gid = (char *) malloc(sizeof(char)*(UID_SIZE + GID_SIZE + 3));
+    sprintf(uid_gid, "%s | %s", uid, gid);
+    return uid_gid;
 }

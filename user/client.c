@@ -13,11 +13,11 @@
 #include "../common/util.h"
 #include "../common/debug.h"
 #include "../common/libio.h"
+#include "../common/constants.h"
 #include "connection.h"
 #include "commands.h"
 
-#define DEFAULT_DSIP "localhost"
-#define DEFAULT_DSPORT "58065" // 58000 + GN
+
 
 bool parse_input (connection_context_t *context, char str[]){
   if (strlen(str) == 0) return 1;

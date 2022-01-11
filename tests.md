@@ -14,8 +14,8 @@
 - 12 :heavy_check_mark:
 - 13 :heavy_check_mark:
 - 14 :heavy_check_mark:
-- 15
-- 16
+- 15 :heavy_check_mark:
+- 16 :heavy_check_mark:
 - 17
 - 18
 - 19
