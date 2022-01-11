@@ -731,6 +731,13 @@ char *retrieve(connection_context_t *connection, char *fs){
     get_word_fd(fd, mid_str);
     int mid = atoi(mid_str);
 
+    if(check_uid(uid) == FERROR || check_gid(gid) == FERROR){
+      //Should we also check mid
+      char *msg_buffer = (char *)malloc(sizeof(char)*(strlen("RRT NOK") + 1));
+      sprintf(msg_buffer, "RRT NOK\n");
+      send_tcp_message(connection, msg_buffer);
+    }
+
     char *group_dir = (char *) malloc(sizeof(char) * (strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid) + 3));
     sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
 
