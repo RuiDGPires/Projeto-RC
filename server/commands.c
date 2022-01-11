@@ -580,6 +580,13 @@ char *ulist(connection_context_t *connection, char *fs){
 
     char *msg;
 
+    if(check_gid(gid) == FERROR){
+      msg = (char *) malloc (sizeof(char)*(strlen("ERR") + 1));
+      sprintf(msg, "ERR\n");
+      send_tcp_message(connection, msg);
+      return NULL;
+    }
+
     char *group_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid) + 3));
     sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
     
