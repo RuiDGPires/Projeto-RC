@@ -8,8 +8,7 @@
 #include <netdb.h>
 
 #include "../common/util.h"
-#define PORT_SIZE 6
-#define BACKLOG_NUM 99
+#include "../common/constants.h"
 
 typedef struct {
   int fd;

@@ -1,5 +1,6 @@
 #include "../common/util.h"
 #include "../common/debug.h"
+#include "../common/constants.h"
 #include "commands.h"
 #include <string.h>
 #include <stdlib.h>
@@ -7,9 +8,6 @@
 #include <unistd.h>
 #include <ctype.h>
 
-#define SUCCESS 1
-#define WARNING 1
-#define FERROR 0
 
 int check_uid(const char str[]){
   if (str == NULL){

@@ -10,11 +10,11 @@
 #ifndef UTIL_H__
 #define UTIL_H__
 
+#include"constants.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TRUE 1
-#define FALSE 0
 
 typedef char bool; // smallest size
 
@@ -29,11 +29,7 @@ typedef char bool; // smallest size
 #endif
 #endif
 
-#define BUFFER_SIZE 128
-#define UID_SIZE 6
-#define PASS_SIZE 9
-#define GID_SIZE 3
-#define MID_SIZE 5
+
 
 size_t get_line(char *, FILE *);
 char *get_word(char **);

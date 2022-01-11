@@ -1,5 +1,6 @@
 #include "../common/debug.h"
 #include "../common/util.h"
+#include "../common/constants.h"
 #include "commands.h"
 #include "file_management.h"
 #include <string.h>
@@ -9,13 +10,6 @@
 #include <ctype.h>
 #include <fcntl.h>
 
-#define TSIZE_SIZE 240
-#define FNAME_SIZE 24
-#define FSIZE_SIZE 24
-
-#define SUCCESS 1
-#define WARNING 1
-#define FERROR 0
 
 int check_uid(const char str[]){
   if (str == NULL){

@@ -125,23 +125,24 @@ void close_connection(connection_context_t **context){
 }
 
 void send_udp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size){
+  DEBUG_MSG_SECTION("UDP");
+  
   context->udp_info->addrlen = sizeof(context->udp_info->addr);
   size_t size = strlen(message), n;
 
   n = sendto(context->udp_info->fd, message, size, 0, context->udp_info->res->ai_addr, context->udp_info->res->ai_addrlen);
   ASSERT(n != -1, "Unable to send message");
-  DEBUG_MSG_SECTION("UDP");
   DEBUG_MSG("Message sent: %s\n", message);
 
   DEBUG_MSG("Awaiting response...\n");
   n = recvfrom(context->udp_info->fd, response, response_size, 0, (struct sockaddr*) &context->udp_info->addr, &context->udp_info->addrlen);
-  ASSERT(n != -1, "Unable to receive message");
+  ASSERT(n != -1, "Unable to receive udp message");
   response[n] = '\0';
   DEBUG_MSG("Response: %s\n", response);
 }
 
 void send_tcp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size){
-
+  DEBUG_MSG_SECTION("TCP");
   init_tcp_connection(context);
 
   context->tcp_info->addrlen = sizeof(context->tcp_info->addr);
@@ -149,13 +150,14 @@ void send_tcp_message_size(connection_context_t *context, const char message[], 
 
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
   ASSERT(n != -1, "Unable connect to server");
-  DEBUG_MSG_SECTION("TCP");
+  
   n = dprintf(context->tcp_info->fd, "%s", message);
   ASSERT(n != -1, "Unable to send message");
   DEBUG_MSG("Message sent: %s\n", message);
+
   DEBUG_MSG("Awaiting response...\n");
   n=read(context->tcp_info->fd, response, response_size);
-  ASSERT(n != -1, "Unable to receive message");
+  ASSERT(n != -1, "Unable to receive tcp message");
   response[n] = '\0';
 
   DEBUG_MSG("Response: %s\n", response);
@@ -164,6 +166,7 @@ void send_tcp_message_size(connection_context_t *context, const char message[], 
 }
 
 void send_tcp_message_sending_size(connection_context_t *context, const char message[], char response[], size_t size){
+  DEBUG_MSG_SECTION("TCP");
 
   init_tcp_connection(context);
 
@@ -172,16 +175,16 @@ void send_tcp_message_sending_size(connection_context_t *context, const char mes
 
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
   ASSERT(n != -1, "Unable connect to server");
-  DEBUG_MSG_SECTION("TCP");
 
   size_t total_written_size = 0;
   while(total_written_size != size)
     total_written_size += write(context->tcp_info->fd, &message[total_written_size], size-total_written_size);
 
   DEBUG_MSG("Message sent: %s\n", message);
+
   DEBUG_MSG("Awaiting response...\n");
   n=read(context->tcp_info->fd, response, BUFFER_SIZE);
-  ASSERT(n != -1, "Unable to receive message");
+  ASSERT(n != -1, "Unable to receive tcp message");
   response[n] = '\0';
 
   DEBUG_MSG("Response: %s\n", response);
@@ -190,6 +193,7 @@ void send_tcp_message_sending_size(connection_context_t *context, const char mes
 }
 
 void send_tcp_message_no_answer(connection_context_t *context, const char *message){
+  DEBUG_MSG_SECTION("TCP");
   init_tcp_connection(context);
 
   context->tcp_info->addrlen = sizeof(context->tcp_info->addr);
@@ -197,9 +201,8 @@ void send_tcp_message_no_answer(connection_context_t *context, const char *messa
 
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
   ASSERT(n != -1, "Unable connect to server");
-  DEBUG_MSG_SECTION("TCP");
   n = dprintf(context->tcp_info->fd, "%s", message);
-  ASSERT(n != -1, "Unable to send message");
+  ASSERT(n != -1, "Unable to send tcp message");
   DEBUG_MSG("Message sent: %s\n", message);
 }
 

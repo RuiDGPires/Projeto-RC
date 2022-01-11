@@ -1,5 +1,6 @@
 #include "../common/debug.h"
 #include "../common/util.h"
+#include "../common/constants.h"
 #include "connection.h"
 #include "commands.h"
 #include "file_management.h"
@@ -10,10 +11,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
-
-#define CLEAR(var) var[0] = '\0'
-#define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)
-#define DEFAULT_DSPORT "58065" // 58000 + GN
 
 void parse_udp_message(connection_context_t *connection, char *msg, char *fs, bool verbose){
   char *command = get_word(&msg);
