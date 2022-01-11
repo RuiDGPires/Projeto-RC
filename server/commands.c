@@ -647,6 +647,13 @@ char *post(connection_context_t *connection, char *fs){
     read_fd(fd, NULL, 1); // Throw away space
     read_fd(fd, gid, 2);
     read_fd(fd, NULL, 1); // Throw away space
+
+    if(check_uid(uid) == FERROR || check_gid(gid) == FERROR){
+      char *msg = (char *)malloc(sizeof(char)*(strlen("RPT NOK") + 1));
+      sprintf(msg, "RPT NOK\n");
+      send_tcp_message(connection, msg);
+      return NULL;
+    }
     
     char tsize_str[TSIZE_SIZE];
     get_word_fd(fd, tsize_str);
