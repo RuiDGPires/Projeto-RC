@@ -663,7 +663,6 @@ char *post(connection_context_t *connection, char *fs){
     char *text = (char *) malloc(sizeof(char)*(tsize + 1));
     read_fd(fd, text, tsize); 
     text[tsize] = '\0';
-    read_fd(fd, NULL, 1); // Throw away space
 
     
     char msg_buffer[BUFFER_SIZE];
@@ -691,9 +690,10 @@ char *post(connection_context_t *connection, char *fs){
 
         char fname[FNAME_SIZE];
 
-        fcntl(fd, F_SETFL, O_NONBLOCK);
-        if (get_word_fd(fd, fname)){ // if there is a file
-            fcntl(fd, F_SETFL, ~O_NONBLOCK);
+        char c;
+        read(fd, &c, 1);
+        if (c == ' '){ // if there is a file
+            get_word_fd(fd, fname);
 
             create_directory(msg_dir, "FILE");
             char *file_path = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("FILE") + strlen(fname) + 5));
@@ -714,7 +714,6 @@ char *post(connection_context_t *connection, char *fs){
         sprintf(msg_buffer, "RPT NOK\n");
     }
 
-    fcntl(fd, F_SETFL, ~O_NONBLOCK);
     send_tcp_message(connection, msg_buffer);
 
     char *uid_gid = (char *) malloc(sizeof(char)*(UID_SIZE + GID_SIZE + 3));
