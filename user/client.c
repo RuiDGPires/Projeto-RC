@@ -36,7 +36,7 @@ bool parse_input (connection_context_t *context, char str[]){
     error = showuid(context, str);
   }else if (strcmp(command, "exit") == 0){
     if (is_logged(context->session))
-        error = logout_(context, str);
+      error = logout_(context, str);
     return 0;
   }else if (strcmp(command, "groups") == 0 || strcmp(command, "gl") == 0){
     error = groups(context, str);

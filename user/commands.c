@@ -90,7 +90,13 @@ int reg(connection_context_t *connection, char *args){
 
   sprintf(buffer, "%s %s %s\n", "REG", uid, pass);
 
-  send_udp_message(connection, buffer, response_buffer);
+  int rcv_success;
+  send_udp_message(connection, buffer, response_buffer,&rcv_success);
+
+  if(rcv_success == 0){
+    warning("An error occured while connecting to the server");
+    return FERROR;
+  }
 
   char *response = response_buffer; // This has to be done for some reason... compiler does not accept casting
 
@@ -120,7 +126,13 @@ int unregister(connection_context_t *connection, char *args){
 
   sprintf(buffer, "%s %s %s\n", "UNR", uid, pass);
 
-  send_udp_message(connection, buffer, response_buffer);
+  int rcv_success;
+  send_udp_message(connection, buffer, response_buffer,&rcv_success);
+
+  if(rcv_success == 0){
+    warning("An error occured while connecting to the server");
+    return FERROR;
+  }
 
   char *response = response_buffer;
 
@@ -153,7 +165,13 @@ int login_(connection_context_t *connection, char *args){
   
   session_context_t *session = connection->session;
 
-  send_udp_message(connection, buffer, response_buffer);
+  int rcv_success;
+  send_udp_message(connection, buffer, response_buffer,&rcv_success);
+
+  if(rcv_success == 0){
+    warning("An error occured while connecting to the server");
+    return FERROR;
+  }
 
   char *response = response_buffer;
 
@@ -187,7 +205,13 @@ int logout_(connection_context_t *connection, char *args){
 
   sprintf(buffer, "OUT %s %s\n",  session->uid, session->pass);
 
-  send_udp_message(connection, buffer, response_buffer);
+  int rcv_success;
+  send_udp_message(connection, buffer, response_buffer, &rcv_success);
+
+  if(rcv_success == 0){
+    warning("An error occured while connecting to the server");
+    return FERROR;
+  }
 
   char *response = response_buffer;
 
@@ -213,7 +237,13 @@ int showuid(connection_context_t *connection, char *args){
 #define RESPONSE_SIZE BUFFER_SIZE*50
 int groups(connection_context_t *connection, char *args){
   char response_buffer[RESPONSE_SIZE];
-  send_udp_message_size(connection, "GLS\n", response_buffer, RESPONSE_SIZE);
+  int rcv_success;
+  send_udp_message_size(connection, "GLS\n", response_buffer, RESPONSE_SIZE, &rcv_success);
+
+  if(rcv_success == 0){
+    warning("An error occured while connecting to the server");
+    return FERROR;
+  }
   
   char *response = response_buffer;
 
@@ -253,7 +283,14 @@ int subscribe(connection_context_t *connection, char *args){
   char buffer[BUFFER_SIZE];
 
   sprintf(buffer, "%s %s %s %s\n", "GSR", session->uid, gid, gname);
-  send_udp_message(connection, buffer, buffer);
+
+  int rcv_success;
+  send_udp_message(connection, buffer, buffer, &rcv_success);
+
+  if(rcv_success == 0){
+    warning("An error occured while connecting to the server");
+    return FERROR;
+  }
 
   char *response = buffer;
   EXPECT(get_word(&response), "RGS");
@@ -298,7 +335,14 @@ int unsubscribe(connection_context_t *connection, char *args){
   char buffer[BUFFER_SIZE];
 
   sprintf(buffer, "%s %s %s\n", "GUR", session->uid, gid);
-  send_udp_message(connection, buffer, buffer);
+
+  int rcv_success;
+  send_udp_message(connection, buffer, buffer, &rcv_success);
+
+  if(rcv_success == 0){
+    warning("An error occured while connecting to the server");
+    return FERROR;
+  }
 
   char *response = buffer;
 
@@ -329,8 +373,14 @@ int my_groups(connection_context_t *connection, char *args){
   }
 
   char buffer[RESPONSE_SIZE];
+  int rcv_success;
   sprintf(buffer, "%s %s\n", "GLM", session->uid);
-  send_udp_message_size(connection, buffer, buffer, RESPONSE_SIZE);
+  send_udp_message_size(connection, buffer, buffer, RESPONSE_SIZE, &rcv_success);
+
+  if(rcv_success == 0){
+    warning("An error occured while connecting to the server");
+    return FERROR;
+  }
 
   char *response = buffer;
 

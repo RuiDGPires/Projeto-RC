@@ -13,6 +13,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int timer_start(int sd){
+  struct timeval tmout;
+  memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
+
+  tmout.tv_sec=15; /* Wait for 15 sec for a reply from server. */
+
+  return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&tmout,sizeof(struct timeval)));
+}
+
+int timer_stop(int sd){
+  struct timeval tmout;
+  memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
+
+  return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tmout,sizeof(struct timeval)));
+}
 
 void init_udp_connection(connection_context_t *connection){
   protocol_info_t *info = (protocol_info_t *) malloc(sizeof(protocol_info_t));
@@ -28,7 +46,7 @@ void init_udp_connection(connection_context_t *connection){
   int errcode = getaddrinfo(connection->dsip, connection->dsport, &info->hints, &info->res);
   ASSERT(errcode == 0, "Unable to get address info");
   DEBUG_MSG("Got address info\n");
-  
+
   connection->udp_info = info;  
 }
 
@@ -124,7 +142,7 @@ void close_connection(connection_context_t **context){
   *context = NULL;
 }
 
-void send_udp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size){
+void send_udp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size, int* rcv_success){
   context->udp_info->addrlen = sizeof(context->udp_info->addr);
   size_t size = strlen(message), n;
 
@@ -133,11 +151,24 @@ void send_udp_message_size(connection_context_t *context, const char message[], 
   DEBUG_MSG_SECTION("UDP");
   DEBUG_MSG("Message sent: %s\n", message);
 
+  ASSERT(timer_start(context->udp_info->fd) != -1, "Unable to set socket timeout");
+
   DEBUG_MSG("Awaiting response...\n");
   n = recvfrom(context->udp_info->fd, response, response_size, 0, (struct sockaddr*) &context->udp_info->addr, &context->udp_info->addrlen);
-  ASSERT(n != -1, "Unable to receive message");
+  
+  if(n == -1){
+    *rcv_success = 0;
+    DEBUG_MSG_SECTION("UDP");
+    DEBUG_MSG("Unable to receive message\n");
+    return;
+  }
+
+  *rcv_success = 1;
+
   response[n] = '\0';
   DEBUG_MSG("Response: %s\n", response);
+
+  ASSERT(timer_stop(context->udp_info->fd) != -1, "Unable to reset socket timeout");
 }
 
 void send_tcp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size){
@@ -202,4 +233,3 @@ void send_tcp_message_no_answer(connection_context_t *context, const char *messa
   ASSERT(n != -1, "Unable to send message");
   DEBUG_MSG("Message sent: %s\n", message);
 }
-
