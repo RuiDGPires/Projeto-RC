@@ -84,7 +84,7 @@ int reg(connection_context_t *connection, char *args){
   uid = get_word(&args);
   pass = get_word(&args);
 
-  if(check_uid(uid) == FERROR || check_pass(pass) == FERROR) return FERROR;
+  if(check_uid(uid) == FERROR || check_pass(pass) == FERROR) return WARNING;
 
   sprintf(buffer, "%s %s %s\n", "REG", uid, pass);
 
@@ -120,7 +120,7 @@ int unregister(connection_context_t *connection, char *args){
   uid = get_word(&args);
   pass = get_word(&args);
 
-  if(check_uid(uid) == FERROR || check_pass(pass) == FERROR) return FERROR;
+  if(check_uid(uid) == FERROR || check_pass(pass) == FERROR) return WARNING;
 
   sprintf(buffer, "%s %s %s\n", "UNR", uid, pass);
 
@@ -157,7 +157,7 @@ int login_(connection_context_t *connection, char *args){
   uid = get_word(&args);
   pass = get_word(&args);
 
-  if(check_uid(uid) == FERROR || check_pass(pass) == FERROR) return FERROR;
+  if(check_uid(uid) == FERROR || check_pass(pass) == FERROR) return WARNING;
 
   sprintf(buffer, "%s %s %s\n", "LOG", uid, pass);
   
@@ -276,7 +276,7 @@ int subscribe(connection_context_t *connection, char *args){
   char *gid = get_word(&args);
   char *gname = get_word(&args);
 
-  if(check_gid(gid) == FERROR || check_gname(gname) == FERROR) return FERROR; //Should this shut down?
+  if(check_gid(gid) == FERROR || check_gname(gname) == FERROR) return WARNING; //Should this shut down?
 
   char buffer[BUFFER_SIZE];
 
