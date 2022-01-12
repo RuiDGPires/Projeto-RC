@@ -412,6 +412,10 @@ int my_groups(connection_context_t *connection, char *args){
 int select_(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
+  char *gid = get_word(&args);
+
+  if (check_gid(gid) == FERROR) return WARNING;
+
   if (!is_logged(session)){
     warning("You are not logged in");
     return WARNING;
