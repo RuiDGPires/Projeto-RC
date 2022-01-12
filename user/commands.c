@@ -276,7 +276,7 @@ int subscribe(connection_context_t *connection, char *args){
   char *gid = get_word(&args);
   char *gname = get_word(&args);
 
-  if(check_gid(gid) == FERROR || check_gname(gname) == FERROR) return WARNING; //Should this shut down?
+  if(check_gid(gid) == FERROR || check_gname(gname) == FERROR) return FERROR; //Should this shut down?
 
   char buffer[BUFFER_SIZE];
 
