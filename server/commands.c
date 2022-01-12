@@ -280,14 +280,14 @@ void groups(connection_context_t *connection, char *args, char *fs){
     char n_str[BUFFER_SIZE];
     sprintf(n_str, "%ld", sll_size(group_list));
 
-    char *msg_buffer = (char *) malloc(sizeof(char)*(4 + strlen(n_str) + sll_size(group_list)*33));
+    char *msg_buffer = (char *) malloc(sizeof(char)*(5 + strlen(n_str) + sll_size(group_list)*33));
 
     sprintf(msg_buffer, "RGL %s", n_str);
 
     FOR_ITEM_IN_LIST(char *group, group_list)
         char *top = &msg_buffer[strlen(msg_buffer)];
 
-        char *group_path = (char *) malloc(sizeof(char) * (strlen(groups_path) + strlen(group)));
+        char *group_path = (char *) malloc(sizeof(char) * (2 + strlen(groups_path) + strlen(group)));
         sprintf(group_path, "%s/%s", groups_path, group);
 
         char *group_msgs_path = (char *) malloc(sizeof(char)*(strlen(group_path) + 8));
