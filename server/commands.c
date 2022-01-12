@@ -296,7 +296,7 @@ void groups(connection_context_t *connection, char *args, char *fs){
 
 
         char *name_path = (char *) malloc(sizeof(char) * (strlen(group_msgs_path) + strlen("name.txt") + 3));
-        sprintf(name_path, "%s/%s", group_path, "name.txt");
+				sprintf(name_path, "%s/%s", group_path, "name.txt");
         FILE *file = fopen(name_path, "r");
         free(name_path);
 
@@ -313,8 +313,10 @@ void groups(connection_context_t *connection, char *args, char *fs){
     
     END_FIIL()
 
-    msg_buffer[strlen(msg_buffer)] = '\n';
-    msg_buffer[strlen(msg_buffer)+1] = '\0';
+		size_t size = strlen(msg_buffer);
+
+    msg_buffer[size] = '\n';
+    msg_buffer[size + 1] = '\0';
     send_udp_message(connection, msg_buffer);
 
     free(msg_buffer);
