@@ -705,7 +705,7 @@ char *post(connection_context_t *connection, char *fs){
             fwrite(file_data, 1, fsize, file);
             fclose(file);
         }
-        sprintf(msg_buffer, "RPT OK\n");
+        sprintf(msg_buffer, "RPT %s\n", msg_id_str);
     }else{
         sprintf(msg_buffer, "RPT NOK\n");
     }
