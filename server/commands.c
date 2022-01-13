@@ -68,6 +68,20 @@ int check_gname(const char str[]){
   return SUCCESS;
 }
 
+int check_mid(const char str[]){
+  ASSERT(str != NULL, FERROR, "Invalid message number");
+
+  size_t size = strlen(str);
+  ASSERT(size == 4, FERROR, "Invalid message number length");
+
+  for (size_t i = 0; i < size; i++)
+    if (!isdigit(str[i])){
+      throw_error("Invalid message number chars");
+      return FERROR;
+    }
+  return SUCCESS;
+}
+
 // returns:
 //  0 if everything is correct
 //  1 if user name does not exist
@@ -724,14 +738,15 @@ char *retrieve(connection_context_t *connection, char *fs){
     get_word_fd(fd, uid);
     get_word_fd(fd, gid);
     get_word_fd(fd, mid_str);
-    int mid = atoi(mid_str);
+    
 
-    if(check_uid(uid) == FERROR || check_gid(gid) == FERROR){
-      //Should we also check mid
+    if(check_uid(uid) == FERROR || check_gid(gid) == FERROR || check_mid(mid_str) == FERROR){
       char *msg_buffer = (char *)malloc(sizeof(char)*(strlen("RRT NOK") + 1));
       sprintf(msg_buffer, "RRT NOK\n");
       send_tcp_message(connection, msg_buffer);
     }
+
+    int mid = atoi(mid_str);
 
     char *group_dir = (char *) malloc(sizeof(char) * (strlen(fs) + strlen(SERVER_GROUPS_NAME) + strlen(gid) + 3));
     sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);

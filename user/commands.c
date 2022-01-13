@@ -67,6 +67,20 @@ int check_gname(const char str[]){
   return SUCCESS;
 }
 
+int check_mid(const char str[]){
+  ASSERT(str != NULL, FERROR, "Invalid message number");
+
+  size_t size = strlen(str);
+  ASSERT(size <= 4, FERROR, "Invalid message number length");
+
+  for (size_t i = 0; i < size; i++)
+    if (!isdigit(str[i])){
+      throw_error("Invalid message number chars");
+      return FERROR;
+    }
+  return SUCCESS;
+}
+
 
 int reg(connection_context_t *connection, char *args){
   char *uid = get_word(&args);
@@ -524,7 +538,7 @@ int post(connection_context_t *connection, char *args){
   }
 }
 
-// Isto é o retrieve....
+
 int retrieve(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -538,7 +552,10 @@ int retrieve(connection_context_t *connection, char *args){
     return WARNING;
   }
 
-  char *mid = get_word(&args); //Check mid?
+  char *mid = get_word(&args);
+
+  if(check_mid(mid) == FERROR) return WARNING;
+
   int mid_int = atoi(mid);
   char buffer[BUFFER_SIZE];
   sprintf(buffer, "RTV %s %s %04d\n", session->uid, session->gid, mid_int);
