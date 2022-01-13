@@ -6,7 +6,7 @@
 
 
 
-void init_udp(connection_context_t *connection){
+int init_udp(connection_context_t *connection){
   DEBUG_MSG("Init UDP Connection\n");
 
   connection->udp_info = (udp_info_t *) malloc(sizeof(udp_info_t));
@@ -15,8 +15,9 @@ void init_udp(connection_context_t *connection){
   connection->udp_info->hints.ai_family=AF_INET;//IPv4
   connection->udp_info->hints.ai_socktype=SOCK_DGRAM;//UDP socket
   connection->udp_info->hints.ai_flags=AI_PASSIVE;
-  ASSERT(getaddrinfo(NULL, connection->port, &connection->udp_info->hints,&connection->udp_info->res) == 0, "Unable to get info");
-  ASSERT(bind(connection->udp_info->fd,connection->udp_info->res->ai_addr,connection->udp_info->res->ai_addrlen) == 0, "Unable to bind");
+  ASSERT(getaddrinfo(NULL, connection->port, &connection->udp_info->hints,&connection->udp_info->res) == 0, FERROR, "Unable to get info");
+  ASSERT(bind(connection->udp_info->fd,connection->udp_info->res->ai_addr,connection->udp_info->res->ai_addrlen) == 0, FERROR, "Unable to bind");
+  return SUCCESS;
 }
 
 void close_udp(connection_context_t *connection){
@@ -26,7 +27,7 @@ void close_udp(connection_context_t *connection){
   connection->udp_info = NULL;
 }
 
-void init_tcp(connection_context_t *connection){
+int init_tcp(connection_context_t *connection){
   DEBUG_MSG("Init TCP Connection\n");
   
   connection->tcp_info = (tcp_info_t *) malloc(sizeof(tcp_info_t));
@@ -37,10 +38,11 @@ void init_tcp(connection_context_t *connection){
   connection->tcp_info->hints.ai_socktype = SOCK_STREAM;
   connection->tcp_info->hints.ai_flags = AI_PASSIVE;
 
-  ASSERT( getaddrinfo(NULL, connection->port,&connection->tcp_info->hints,&connection->tcp_info->res) == 0, "Unable to get address info") ;
-  ASSERT( bind(connection->tcp_info->fd, connection->tcp_info->res->ai_addr, connection->tcp_info->res->ai_addrlen) == 0, "Unable to bind");
+  ASSERT( getaddrinfo(NULL, connection->port,&connection->tcp_info->hints,&connection->tcp_info->res) == 0, FERROR, "Unable to get address info") ;
+  ASSERT( bind(connection->tcp_info->fd, connection->tcp_info->res->ai_addr, connection->tcp_info->res->ai_addrlen) == 0, FERROR, "Unable to bind");
 
-  ASSERT(listen(connection->tcp_info->fd, BACKLOG_NUM) == 0, "Listen failed"); 
+  ASSERT(listen(connection->tcp_info->fd, BACKLOG_NUM) == 0, FERROR, "Listen failed"); 
+  return SUCCESS;
 }
 
 void close_tcp(connection_context_t *connection){
@@ -54,7 +56,7 @@ void wait_udp_message(connection_context_t *connection, char *buffer, size_t siz
   DEBUG_MSG_SECTION("UDP");
   DEBUG_MSG("Waiting message...\n");
   connection->udp_info->addrlen = sizeof(connection->udp_info->addr);
-  ASSERT(recvfrom(connection->udp_info->fd,buffer, size, 0, (struct sockaddr*) &(connection->udp_info->addr), &(connection->udp_info->addrlen)) != -1, "Error receiving message");
+  ASSERT_NOR(recvfrom(connection->udp_info->fd,buffer, size, 0, (struct sockaddr*) &(connection->udp_info->addr), &(connection->udp_info->addrlen)) != -1, "Error receiving message");
 
   DEBUG_MSG("Message received!:\n\t%s\n", buffer);
 }
@@ -62,7 +64,7 @@ void wait_udp_message(connection_context_t *connection, char *buffer, size_t siz
 void send_udp_message_size(connection_context_t *connection, char *buffer, size_t size){
   connection->udp_info->addrlen = sizeof(connection->udp_info->addr);
 
-  ASSERT(sendto(connection->udp_info->fd,buffer, size,0, (struct sockaddr*) &(connection->udp_info->addr), connection->udp_info->addrlen) != -1, "Error sending message");
+  ASSERT_NOR(sendto(connection->udp_info->fd,buffer, size,0, (struct sockaddr*) &(connection->udp_info->addr), connection->udp_info->addrlen) != -1, "Error sending message");
 }
 
 int accept_tcp_message(connection_context_t *connection){
@@ -71,7 +73,7 @@ int accept_tcp_message(connection_context_t *connection){
   connection->tcp_info->addrlen = sizeof(connection->tcp_info->addr);
 
   int newfd = accept(connection->tcp_info->fd, (struct sockaddr*) &(connection->tcp_info->addr), &connection->tcp_info->addrlen);
-  ASSERT(newfd != -1, "Error acceptiong connection");
+  ASSERT_NOR(newfd != -1, "Error acceptiong connection");
   return newfd;
 }
 
@@ -80,7 +82,7 @@ void wait_tcp_message(connection_context_t *connection, char *buffer, size_t siz
   DEBUG_MSG_SECTION("TCP");
   DEBUG_MSG("Waiting message...\n");
   
-  ASSERT(read(connection->tcp_info->fd,buffer,size) != -1, "Error receiving message");
+  ASSERT_NOR(read(connection->tcp_info->fd,buffer,size) != -1, "Error receiving message");
 
   DEBUG_MSG("Message received!: \n\t%s\n", buffer);
 }
@@ -88,5 +90,5 @@ void wait_tcp_message(connection_context_t *connection, char *buffer, size_t siz
 void send_tcp_message_size(connection_context_t *connection, char *buffer, size_t size){
   connection->tcp_info->addrlen = sizeof(connection->tcp_info->addr);
 
-  ASSERT(write(connection->tcp_info->fd, buffer, size) != -1, "Error while sending message");
+  ASSERT_NOR(write(connection->tcp_info->fd, buffer, size) != -1, "Error while sending message");
 }

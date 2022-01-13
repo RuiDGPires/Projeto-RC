@@ -22,7 +22,7 @@ char *create_filesystem(char *path){
     sprintf(server_path,"%s/%s", path, SERVER_DIRECTORY_NAME);
 
     if (!(directory_exists(server_path))){
-      ASSERT(mkdir(server_path, 0700) != -1, "Unable to create main directory"); //error
+      ASSERT_NOR(mkdir(server_path, 0700) != -1, "Unable to create main directory"); //error
       DEBUG_MSG("Server Main Directory created (%s)\n", server_path);
 
       create_directory(server_path, SERVER_USERS_NAME);
@@ -80,14 +80,14 @@ void delete_directory(char *path){
         
             file_path = (char*) malloc (sizeof(char) * (strlen(path) + strlen(dir->d_name) + 2));
             sprintf(file_path, "%s/%s", path, dir->d_name);
-            ASSERT(remove(file_path) != -1, "Couldn't remove %s", file_path); 
+            ASSERT_NOR(remove(file_path) != -1, "Couldn't remove %s", file_path); 
 
             DEBUG_MSG("%s closed\n", file_path);
 
             free(file_path);
         }
     }
-    ASSERT(rmdir(path) != -1, "Couldn't remove %s", path);
+    ASSERT_NOR(rmdir(path) != -1, "Couldn't remove %s", path);
 
     DEBUG_MSG("%s closed\n", path);
 }
@@ -145,7 +145,7 @@ void create_file(char *path, char *name, char *data){
     sprintf(file_path,"%s/%s", path, name);
 
     FILE *file = fopen(file_path, "w");
-    ASSERT(file != NULL, "Unable to open file");
+    ASSERT_NOR(file != NULL, "Unable to open file");
 
     if (data != NULL)
         fprintf(file, "%s", data);
@@ -163,7 +163,7 @@ void delete_file(char *path, char *name){
     char *file_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name) + 2));
     sprintf(file_path,"%s/%s", path, name);
 
-    ASSERT(remove(file_path) == 0, "Unable to delete file");
+    ASSERT_NOR(remove(file_path) == 0, "Unable to delete file");
     DEBUG_MSG("File deleted\n");
 }
 

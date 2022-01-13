@@ -32,11 +32,11 @@ int timer_stop(int sd){
   return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&tmout,sizeof(struct timeval)));
 }
 
-void init_udp_connection(connection_context_t *connection){
+int init_udp_connection(connection_context_t *connection){
   protocol_info_t *info = (protocol_info_t *) malloc(sizeof(protocol_info_t));
 
   info->fd = socket(AF_INET, SOCK_DGRAM, 0);
-  ASSERT(info->fd != -1, "Unable to create socket");
+  ASSERT(info->fd != -1, FERROR, "Unable to create socket");
   DEBUG_MSG("Socket created\n");
 
   memset(&info->hints, 0, sizeof info->hints);
@@ -44,10 +44,11 @@ void init_udp_connection(connection_context_t *connection){
   info->hints.ai_socktype = SOCK_DGRAM;
 
   int errcode = getaddrinfo(connection->dsip, connection->dsport, &info->hints, &info->res);
-  ASSERT(errcode == 0, "Unable to get address info");
+  ASSERT(errcode == 0, FERROR, "Unable to get address info");
   DEBUG_MSG("Got address info\n");
 
   connection->udp_info = info;  
+  return SUCCESS;
 }
 
 void close_udp_connection(protocol_info_t **info){
@@ -57,11 +58,11 @@ void close_udp_connection(protocol_info_t **info){
   *info = NULL;
 }
 
-void init_tcp_connection(connection_context_t *connection){
+int init_tcp_connection(connection_context_t *connection){
   protocol_info_t *info = (protocol_info_t *) malloc(sizeof(protocol_info_t));
 
   info->fd = socket(AF_INET, SOCK_STREAM, 0);
-  ASSERT(info->fd != -1, "Unable to create socket");
+  ASSERT(info->fd != -1, FERROR, "Unable to create socket");
   DEBUG_MSG("Socket created\n");
 
   memset(&info->hints, 0, sizeof info->hints);
@@ -69,10 +70,11 @@ void init_tcp_connection(connection_context_t *connection){
   info->hints.ai_socktype = SOCK_STREAM;
 
   int errcode = getaddrinfo(connection->dsip, connection->dsport, &info->hints, &info->res);
-  ASSERT(errcode == 0, "Unable to get address info");
+  ASSERT(errcode == 0, FERROR, "Unable to get address info");
   DEBUG_MSG("Got address info\n");
   
   connection->tcp_info = info;  
+  return SUCCESS;
 }
 
 void close_tcp_connection(protocol_info_t **info){
@@ -127,7 +129,10 @@ connection_context_t *init_connection(const char dsip[], const char dsport[]){
   strcpy(context->dsip, dsip); 
   strcpy(context->dsport, dsport); 
 
-  init_udp_connection(context);
+  if (init_udp_connection(context) == FERROR){
+    context = NULL;
+    return context;
+  }
 
   context->session = init_session(context);
   return context;
@@ -147,10 +152,10 @@ void send_udp_message_size(connection_context_t *context, const char message[], 
   size_t size = strlen(message), n;
 
   n = sendto(context->udp_info->fd, message, size, 0, context->udp_info->res->ai_addr, context->udp_info->res->ai_addrlen);
-  ASSERT(n != -1, "Unable to send message");
+  ASSERT_NOR(n != -1, "Unable to send message");
   DEBUG_MSG("Message sent: %s\n", message);
 
-  ASSERT(timer_start(context->udp_info->fd) != -1, "Unable to set socket timeout");
+  ASSERT_NOR(timer_start(context->udp_info->fd) != -1, "Unable to set socket timeout");
 
   DEBUG_MSG("Awaiting response...\n");
   n = recvfrom(context->udp_info->fd, response, response_size, 0, (struct sockaddr*) &context->udp_info->addr, &context->udp_info->addrlen);
@@ -167,7 +172,7 @@ void send_udp_message_size(connection_context_t *context, const char message[], 
   response[n] = '\0';
   DEBUG_MSG("Response: %s\n", response);
 
-  ASSERT(timer_stop(context->udp_info->fd) != -1, "Unable to reset socket timeout");
+  ASSERT_NOR(timer_stop(context->udp_info->fd) != -1, "Unable to reset socket timeout");
 }
 
 void send_tcp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size){
@@ -178,15 +183,15 @@ void send_tcp_message_size(connection_context_t *context, const char message[], 
   size_t n;
 
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
-  ASSERT(n != -1, "Unable connect to server");
+  ASSERT_NOR(n != -1, "Unable connect to server");
   
   n = dprintf(context->tcp_info->fd, "%s", message);
-  ASSERT(n != -1, "Unable to send message");
+  ASSERT_NOR(n != -1, "Unable to send message");
   DEBUG_MSG("Message sent: %s\n", message);
 
   DEBUG_MSG("Awaiting response...\n");
   n=read(context->tcp_info->fd, response, response_size);
-  ASSERT(n != -1, "Unable to receive tcp message");
+  ASSERT_NOR(n != -1, "Unable to receive tcp message");
   response[n] = '\0';
 
   DEBUG_MSG("Response: %s\n", response);
@@ -203,7 +208,7 @@ void send_tcp_message_sending_size(connection_context_t *context, const char mes
   size_t n;
 
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
-  ASSERT(n != -1, "Unable connect to server");
+  ASSERT_NOR(n != -1, "Unable connect to server");
 
   size_t total_written_size = 0;
   while(total_written_size != size)
@@ -213,7 +218,7 @@ void send_tcp_message_sending_size(connection_context_t *context, const char mes
 
   DEBUG_MSG("Awaiting response...\n");
   n=read(context->tcp_info->fd, response, BUFFER_SIZE);
-  ASSERT(n != -1, "Unable to receive tcp message");
+  ASSERT_NOR(n != -1, "Unable to receive tcp message");
   response[n] = '\0';
 
   DEBUG_MSG("Response: %s\n", response);
@@ -229,8 +234,8 @@ void send_tcp_message_no_answer(connection_context_t *context, const char *messa
   size_t  n;
 
   n=connect(context->tcp_info->fd, context->tcp_info->res->ai_addr, context->tcp_info->res->ai_addrlen);
-  ASSERT(n != -1, "Unable connect to server");
+  ASSERT_NOR(n != -1, "Unable connect to server");
   n = dprintf(context->tcp_info->fd, "%s", message);
-  ASSERT(n != -1, "Unable to send tcp message");
+  ASSERT_NOR(n != -1, "Unable to send tcp message");
   DEBUG_MSG("Message sent: %s\n", message);
 }

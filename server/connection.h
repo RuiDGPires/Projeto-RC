@@ -32,10 +32,10 @@ typedef struct connection_context_s {
   tcp_info_t *tcp_info;
 } connection_context_t;
 
-void init_udp(connection_context_t *);
+int init_udp(connection_context_t *);
 void close_udp(connection_context_t *);
 
-void init_tcp(connection_context_t *);
+int init_tcp(connection_context_t *);
 void close_tcp(connection_context_t *);
 
 void wait_udp_message(connection_context_t *, char *, size_t);

@@ -122,7 +122,7 @@ void parse_args(char *dsport, bool *verbose, int argc, char *argv[]){
     if (strcmp(argv[i], "-v") == 0)
       *verbose = TRUE;
     else if (strcmp(argv[i], "-p") == 0){
-      ASSERT(argc != i + 1, "-p requires another argument");
+      ASSERT_NOR(argc != i + 1, "-p requires another argument");
       strcpy(dsport, argv[++i]);
 
     }else throw_error("Unkown command line argument");
@@ -164,8 +164,8 @@ int main(int argc, char *argv[]){
   connection_context_t *context = (connection_context_t *) malloc(sizeof(connection_context_t));
   strcpy(context->port, dsport);
 
-  init_udp(context);
-  init_tcp(context);
+  if(init_udp(context) == FERROR) exit(0);
+  if(init_tcp(context) == FERROR) exit(0); 
 
   char *fs = create_filesystem(".");
 

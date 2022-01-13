@@ -17,7 +17,7 @@ int check_uid(const char str[]){
     return FERROR;
   }
   size_t size = strlen(str);
-  ASSERT(size == 5, "Invalid user name size");
+  ASSERT(size == 5, FERROR, "Invalid user name size");
 
   for (size_t i = 0; i < size; i++)
     if (!isdigit(str[i])){
@@ -25,7 +25,7 @@ int check_uid(const char str[]){
       return FERROR;
     }
   
-  return size == 5;
+  return SUCCESS;
 }
 
 int check_pass(const char str[]){
@@ -34,14 +34,14 @@ int check_pass(const char str[]){
     return FERROR;
   }
   size_t size = strlen(str);
-  ASSERT(size == 8, "Invalid password size");
+  ASSERT(size == 8, FERROR, "Invalid password size");
 
   for (size_t i = 0; i < size; i++)
     if (!isdigit(str[i]) && !isalpha(str[i])){
       throw_error("Invalid password characters");
       return FERROR;
     }
-  return size == 8;
+  return SUCCESS;
 }
 
 int check_gid(const char str[]){
@@ -50,14 +50,14 @@ int check_gid(const char str[]){
     return FERROR;
   }
   size_t size = strlen(str);
-  ASSERT(size == 2, "Invalid group number size");
+  ASSERT(size == 2, FERROR, "Invalid group number size");
 
   for (size_t i = 0; i < size; i++)
     if (!isdigit(str[i])){
       throw_error("Invalid group id chars");
       return FERROR;
     }
-  return size == 2;
+  return SUCCESS;
 }
 
 int check_gname(const char str[]){
@@ -66,14 +66,14 @@ int check_gname(const char str[]){
     return FERROR;
   }
   size_t size = strlen(str);
-  ASSERT(size < 24, "Invalid group name length");
+  ASSERT(size < 24, FERROR, "Invalid group name length");
 
   for (size_t i = 0; i < size; i++)
     if (!isdigit(str[i]) && !isalpha(str[i]) && str[i] != '-' && str[i] != '_'){
       throw_error("Invalid group name chars");
       return FERROR;
     }
-  return size < 24;
+  return SUCCESS;
 }
 
 // returns:

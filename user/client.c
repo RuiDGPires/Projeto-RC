@@ -66,7 +66,7 @@ bool parse_input(connection_context_t *context, char str[]){
 
 void parse_args(char *dsip, char *dsport, int argc, char *argv[]){
   DEBUG_MSG_SECTION("ARGS");
-  ASSERT(argc % 2 != 0, "Invalid number of arguments");
+  ASSERT_NOR(argc % 2 != 0, "Invalid number of arguments");
 
   CLEAR(dsip);
   CLEAR(dsport);

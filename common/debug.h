@@ -13,16 +13,27 @@
 #include "libio.h"
 
 #ifndef NO_ASSERT
-  #define ASSERT(expression, ...) \
+  #define ASSERT(expression, return_value, ...) \
     do{\
     if (expression);\
-    else throw_error(__VA_ARGS__);\
+    else{throw_error(__VA_ARGS__);\
+    return return_value;}\
     }while(0)
 #else
   #define ASSERT(...) 
 #endif
 
-#define EXPECT(str, expected) ASSERT(strcmp(str, expected)==0, "Unexpected response from server")
+#ifndef NO_ASSERT_NOR
+  #define ASSERT_NOR(expression, ...) \
+    do{\
+    if (expression);\
+    else throw_error(__VA_ARGS__);\
+    }while(0)
+#else
+  #define ASSERT_NOR(...) 
+#endif
+
+#define EXPECT(str, expected) ASSERT_NOR(strcmp(str, expected)==0, "Unexpected response from server")
 
 #ifdef DEBUG
   #define PRINT_FUNC_NAME() fprintf(stderr, "%s: ", __FUNCTION_NAME__)

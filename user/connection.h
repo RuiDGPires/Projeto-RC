@@ -44,10 +44,10 @@ typedef struct connection_context_s {
   session_context_t *session;
 } connection_context_t;
 
-void init_udp_connection(connection_context_t *);
+int init_udp_connection(connection_context_t *);
 void close_udp_connection(protocol_info_t **);
 
-void init_tcp_connection(connection_context_t *);
+int init_tcp_connection(connection_context_t *);
 void close_tcp_connection(protocol_info_t **);
 
 session_context_t *init_session(connection_context_t *);
