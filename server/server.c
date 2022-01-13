@@ -156,8 +156,7 @@ int main(int argc, char *argv[]){
 
   struct sigaction act;
   memset(&act, 0, sizeof act);
-  act.sa_handler=SIG_IGN;
-
+  
   if (sigaction(SIGCHLD, &act, NULL)==-1)/*error*/exit(1);
 
   parse_args(dsport, &verbose, argc, argv);
