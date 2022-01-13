@@ -91,10 +91,8 @@ int reg(connection_context_t *connection, char *args){
   int rcv_success;
   send_udp_message(connection, buffer, response_buffer,&rcv_success);
 
-  if(rcv_success == 0){
-    warning("An error occured while connecting to the server");
-    return FERROR;
-  }
+  ASSERT(rcv_success == 0, "An error occured while connecting to the server");
+  if(rcv_success != 0) return FERROR;
 
   char *response = response_buffer; // This has to be done for some reason... compiler does not accept casting
 
@@ -108,7 +106,7 @@ int reg(connection_context_t *connection, char *args){
     warning("User is already registered");
     return WARNING;
   }else {
-    warning("An error occured while registering user");
+    throw_error("An error occured while registering user");
     return WARNING;
   }
 }
@@ -127,10 +125,8 @@ int unregister(connection_context_t *connection, char *args){
   int rcv_success;
   send_udp_message(connection, buffer, response_buffer,&rcv_success);
 
-  if(rcv_success == 0){
-    warning("An error occured while connecting to the server");
-    return FERROR;
-  }
+  ASSERT(rcv_success == 0, "An error occured while connecting to the server");
+  if(rcv_success != 0) return FERROR;
 
   char *response = response_buffer;
 
@@ -145,7 +141,7 @@ int unregister(connection_context_t *connection, char *args){
     }
     return SUCCESS;
   }else {
-    warning("Invalid user or incorrect password");
+    throw_error("Invalid user or incorrect password");
     return WARNING; //Should Shut Down?
   }
 }
@@ -166,10 +162,8 @@ int login_(connection_context_t *connection, char *args){
   int rcv_success;
   send_udp_message(connection, buffer, response_buffer,&rcv_success);
 
-  if(rcv_success == 0){
-    warning("An error occured while connecting to the server");
-    return FERROR;
-  }
+  ASSERT(rcv_success == 0, "An error occured while connecting to the server");
+  if(rcv_success != 0) return FERROR;
 
   char *response = response_buffer;
 
@@ -186,7 +180,7 @@ int login_(connection_context_t *connection, char *args){
       return SUCCESS;
     }
   }else {
-    warning("Invalid user or incorrect password");
+    throw_error("Invalid user or incorrect password");
     return WARNING; //Should Shut Down?
   }
 }
@@ -206,10 +200,8 @@ int logout_(connection_context_t *connection, char *args){
   int rcv_success;
   send_udp_message(connection, buffer, response_buffer, &rcv_success);
 
-  if(rcv_success == 0){
-    warning("An error occured while connecting to the server");
-    return FERROR;
-  }
+  ASSERT(rcv_success == 0, "An error occured while connecting to the server");
+  if(rcv_success != 0) return FERROR;
 
   char *response = response_buffer;
 
@@ -228,7 +220,7 @@ int showuid(connection_context_t *connection, char *args){
     warning("You are not logged in");
     return WARNING;
   }
-  printf("%s\n", session->uid);
+  info("%s\n", session->uid);
   return SUCCESS;
 }
 
@@ -238,10 +230,8 @@ int groups(connection_context_t *connection, char *args){
   int rcv_success;
   send_udp_message_size(connection, "GLS\n", response_buffer, RESPONSE_SIZE, &rcv_success);
 
-  if(rcv_success == 0){
-    warning("An error occured while connecting to the server");
-    return FERROR;
-  }
+  ASSERT(rcv_success == 0, "An error occured while connecting to the server");
+  if(rcv_success != 0) return FERROR;
   
   char *response = response_buffer;
 
@@ -255,7 +245,7 @@ int groups(connection_context_t *connection, char *args){
     for (int i = 0; i < N; i++){
       id = get_word(&response);
       name = get_word(&response);
-      printf("\t[%s] %s\n", id, name);
+      info("\t[%s] %s\n", id, name);
       (void) get_word(&response);
     }
   }else{
@@ -285,10 +275,8 @@ int subscribe(connection_context_t *connection, char *args){
   int rcv_success;
   send_udp_message(connection, buffer, buffer, &rcv_success);
 
-  if(rcv_success == 0){
-    warning("An error occured while connecting to the server");
-    return FERROR;
-  }
+  ASSERT(rcv_success == 0, "An error occured while connecting to the server");
+  if(rcv_success != 0) return FERROR;
 
   char *response = buffer;
   EXPECT(get_word(&response), "RGS");
@@ -304,10 +292,10 @@ int subscribe(connection_context_t *connection, char *args){
     throw_error("Invalid UID"); // This shouldn't happen...
     return WARNING; //Should Shut Down?
   }else if (strcmp(status, "E_GRP") == 0){
-    warning("Invalid GID: %s", gid);
+    throw_error("Invalid GID: %s", gid);
     return WARNING;
   }else if (strcmp(status, "E_GNAME") == 0){
-    warning("Invalid GNAME: %s", gname);
+    throw_error("Invalid GNAME: %s", gname);
     return WARNING;
   }else if (strcmp(status, "E_FULL") == 0){
     warning("Server capacity is full, no more groups can be created");
@@ -337,10 +325,8 @@ int unsubscribe(connection_context_t *connection, char *args){
   int rcv_success;
   send_udp_message(connection, buffer, buffer, &rcv_success);
 
-  if(rcv_success == 0){
-    warning("An error occured while connecting to the server");
-    return FERROR;
-  }
+  ASSERT(rcv_success == 0, "An error occured while connecting to the server");
+  if(rcv_success != 0) return FERROR;
 
   char *response = buffer;
 
@@ -354,7 +340,7 @@ int unsubscribe(connection_context_t *connection, char *args){
     throw_error("Invalid UID"); // This shouldn't happen...
     return WARNING; //Should Shut Down?
   }else if (strcmp(status, "E_GRP") == 0){
-    warning("Invalid GID: %s", gid);
+    throw_error("Invalid GID: %s", gid);
     return WARNING;
   }else {
     throw_error("Unkown error");
@@ -371,14 +357,13 @@ int my_groups(connection_context_t *connection, char *args){
   }
 
   char buffer[RESPONSE_SIZE];
+
   int rcv_success;
   sprintf(buffer, "%s %s\n", "GLM", session->uid);
   send_udp_message_size(connection, buffer, buffer, RESPONSE_SIZE, &rcv_success);
 
-  if(rcv_success == 0){
-    warning("An error occured while connecting to the server");
-    return FERROR;
-  }
+  ASSERT(rcv_success == 0, "An error occured while connecting to the server");
+  if(rcv_success != 0) return FERROR;
 
   char *response = buffer;
 
@@ -398,7 +383,7 @@ int my_groups(connection_context_t *connection, char *args){
       for (int i = 0; i < N; i++){
         id = get_word(&response);
         name = get_word(&response);
-        printf("\t[%s] %s\n", id, name);
+        info("\t[%s] %s\n", id, name);
         (void) get_word(&response);
       }
       return SUCCESS;
@@ -438,7 +423,7 @@ int showgid(connection_context_t *connection, char *args){
     return WARNING;
   }
 
-  printf("Selected: %s\n", session->gid);
+  info("Selected: %s\n", session->gid);
   return SUCCESS;
 }
 
@@ -479,7 +464,7 @@ int ulist(connection_context_t *connection, char *args){
 
       while(buffer[0] != '\0'){
         get_word_fd(connection->tcp_info->fd, buffer);
-        printf("\t%s\n", buffer);
+        info("\t%s\n", buffer);
       }
       return SUCCESS;
     }
@@ -530,7 +515,7 @@ int post(connection_context_t *connection, char *args){
     // Abrir ficheiro
     FILE *file = fopen(file_name, "rb");
     ASSERT(file != NULL, "Unable to open file: %s", file_name);
-    if(file == NULL) return FERROR; //Should Shut Down?
+    if(file == NULL) return WARNING; //Should Shut Down?
 
     size_t file_size = get_file_size(file);
 
@@ -555,7 +540,7 @@ int post(connection_context_t *connection, char *args){
   char *status = get_word(&response);
 
   if (strcmp(status, "NOK") == 0){
-    warning("Post failed");
+    throw_error("Post failed");
     return WARNING;
   }else{
     success("Post succeeded with MID: %s", status);
@@ -657,7 +642,7 @@ int retrieve(connection_context_t *connection, char *args){
         DEBUG_MSG("Read size %ld\n", total_read_size);
 
         ASSERT(file_size == total_read_size, "File sizes don't match");
-        if(file_size != total_read_size) return FERROR; //Should Shut Down?
+        if(file_size != total_read_size) return WARNING; //Should Shut Down?
         // get rid of ' '
         (void) read(connection->tcp_info->fd, buffer, 1);
 
@@ -666,17 +651,17 @@ int retrieve(connection_context_t *connection, char *args){
         fwrite(file_data, 1, file_size, file);
 
         ASSERT(file_size == get_file_size(file), "File sizes don't match");
-        if(file_size != get_file_size(file)) return FERROR; //Should Shut Down?
+        if(file_size != get_file_size(file)) return WARNING; //Should Shut Down?
         fclose(file);
 
         free(file_data);
         get_word_fd(connection->tcp_info->fd, buffer);
       }
       
-      printf("%s - \"%s\";", mid, msg);
+      info("%s - \"%s\";", mid, msg);
       if (has_file)
-        printf(" file stored: %s", file_name);
-      printf("\n");
+        info(" file stored: %s", file_name);
+      info("\n");
 
       free(msg);
     }
