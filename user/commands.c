@@ -109,7 +109,7 @@ int reg(connection_context_t *connection, char *args){
     return WARNING;
   }else {
     warning("An error occured while registering user");
-    return FERROR;
+    return WARNING;
   }
 }
 
@@ -146,7 +146,7 @@ int unregister(connection_context_t *connection, char *args){
     return SUCCESS;
   }else {
     warning("Invalid user or incorrect password");
-    return FERROR; //Should Shut Down?
+    return WARNING; //Should Shut Down?
   }
 }
 
@@ -187,7 +187,7 @@ int login_(connection_context_t *connection, char *args){
     }
   }else {
     warning("Invalid user or incorrect password");
-    return FERROR; //Should Shut Down?
+    return WARNING; //Should Shut Down?
   }
 }
 
@@ -302,7 +302,7 @@ int subscribe(connection_context_t *connection, char *args){
     return SUCCESS;
   }else if (strcmp(status, "E_USR") == 0){
     throw_error("Invalid UID"); // This shouldn't happen...
-    return FERROR; //Should Shut Down?
+    return WARNING; //Should Shut Down?
   }else if (strcmp(status, "E_GRP") == 0){
     warning("Invalid GID: %s", gid);
     return WARNING;
@@ -314,7 +314,7 @@ int subscribe(connection_context_t *connection, char *args){
     return WARNING;
   }else{
     throw_error("Unkown error");
-    return FERROR;
+    return WARNING;
   }
 }
 
@@ -352,13 +352,13 @@ int unsubscribe(connection_context_t *connection, char *args){
     return SUCCESS;
   }else if (strcmp(status, "E_USR") == 0){
     throw_error("Invalid UID"); // This shouldn't happen...
-    return FERROR; //Should Shut Down?
+    return WARNING; //Should Shut Down?
   }else if (strcmp(status, "E_GRP") == 0){
     warning("Invalid GID: %s", gid);
     return WARNING;
   }else {
     throw_error("Unkown error");
-    return FERROR;
+    return WARNING;
   }
 }
 
@@ -388,7 +388,7 @@ int my_groups(connection_context_t *connection, char *args){
   
   if (strcmp(N_str, "E_USR") == 0){
     throw_error("Invalid UID"); // This shouldn't happen...
-    return FERROR; //Should Shut Down?
+    return WARNING; //Should Shut Down?
   }else{
     int N = atoi(N_str);
 
@@ -685,7 +685,7 @@ int retrieve(connection_context_t *connection, char *args){
     return WARNING;
   }else{ // NOK
     throw_error("Unkown error");
-    return FERROR;
+    return WARNING;
   }
 
   close_tcp_connection(&connection->tcp_info); //Shouldn't we close tcp connection right after we fill the buffer?
