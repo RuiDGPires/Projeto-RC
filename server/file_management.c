@@ -98,7 +98,7 @@ bool directory_exists(char *path){
   return stat(path, &sb) == 0 && S_ISDIR(sb.st_mode);
 }
 
-sll_link_t list_subdirectories(char *path){
+sll_link_t list_subdirectories_ord(char *path){
     DIR *d;
     struct dirent *dir;
     
@@ -112,6 +112,26 @@ sll_link_t list_subdirectories(char *path){
 
             if (dir->d_type == DT_DIR)
                 sll_append_ord(&dir_list, dir->d_name, strcmp);
+        }
+    }
+
+    return dir_list;
+}
+
+sll_link_t list_subdirectories(char *path){
+    DIR *d;
+    struct dirent *dir;
+    
+    sll_link_t dir_list = sll_create();
+
+    d = opendir(path);
+
+    if(d){
+        while((dir = readdir(d)) != NULL){
+            if(dir->d_name[0] == '.') continue;
+
+            if (dir->d_type == DT_DIR)
+                sll_push(&dir_list, dir->d_name);
         }
     }
 

@@ -19,6 +19,7 @@ void create_directory(char *, char *);
 #define create_directory_abs(dir) create_directory(dir, "/")
 
 sll_link_t list_subdirectories(char *);
+sll_link_t list_subdirectories_ord(char *);
 void delete_directory(char *);
 bool directory_exists(char *);
 

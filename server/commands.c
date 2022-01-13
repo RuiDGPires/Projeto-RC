@@ -274,7 +274,7 @@ void groups(connection_context_t *connection, char *args, char *fs){
     char *groups_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 3));
     sprintf(groups_path, "%s/%s/", fs, SERVER_GROUPS_NAME);
 
-    sll_link_t group_list = list_subdirectories(groups_path);
+    sll_link_t group_list = list_subdirectories_ord(groups_path);
 
     // Convert to string so that strlen can be used to measure string size
     char n_str[BUFFER_SIZE];
@@ -313,7 +313,7 @@ void groups(connection_context_t *connection, char *args, char *fs){
     
     END_FIIL()
 
-		size_t size = strlen(msg_buffer);
+    size_t size = strlen(msg_buffer);
 
     msg_buffer[size] = '\n';
     msg_buffer[size + 1] = '\0';
@@ -330,6 +330,7 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
     char *gname = get_word(&args);
 
     char msg_buffer[BUFFER_SIZE];
+    bool has_msg = FALSE;
 
     if(check_uid(uid) == FERROR){
       sprintf(msg_buffer, "RGS E_USR\n");
@@ -348,9 +349,10 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
     char *user_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + 10));
     sprintf(user_dir, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
 
-    if (!(directory_exists(user_dir)))
+    if (!(directory_exists(user_dir))){
         sprintf(msg_buffer, "RGS E_USR\n");
-    else{
+        has_msg = TRUE;
+    }else{
         char *groups_dir = malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 3));
         sprintf(groups_dir, "%s/%s", fs, SERVER_GROUPS_NAME);
 
@@ -361,6 +363,7 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
 
             if (new_id > 99){
                 sprintf(msg_buffer, "RGS E_FULL\n");
+                has_msg = TRUE;
             }else{
                 sprintf(group_dir, "%s/%02d", groups_dir, new_id);
 
@@ -370,13 +373,16 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
 
                 sll_destroy(&group_list);
                 sprintf(gid, "%02d", new_id);
+                sprintf(msg_buffer, "RGS NEW %s\n", gid);
+                has_msg = TRUE;
             }
         }
 
         sprintf(group_dir, "%s/%s", groups_dir, gid);
 
         if (!(directory_exists(groups_dir))){
-            sprintf(msg_buffer, "RGS E_GRP\n");
+            if (!has_msg)
+                sprintf(msg_buffer, "RGS E_GRP\n");
         }else{
             char *group_name_path = malloc(sizeof(char) * (strlen(group_dir) + strlen("name.txt") + 2));
             sprintf(group_name_path, "%s/name.txt", group_dir);
@@ -386,10 +392,12 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
             free(group_name_path);
             fclose(file);
             if (strcmp(group_name, gname) != 0){
-                sprintf(msg_buffer, "RGS E_GNAME\n");
+                if (!has_msg)
+                    sprintf(msg_buffer, "RGS E_GNAME\n");
             }else{
                 create_file(group_dir, uid, NULL);
-                sprintf(msg_buffer, "RGS OK\n");
+                if (!has_msg)
+                    sprintf(msg_buffer, "RGS OK\n");
             }
 
         }
@@ -488,7 +496,7 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
   char *groups_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 3));
   sprintf(groups_path, "%s/%s/", fs, SERVER_GROUPS_NAME);
 
-  sll_link_t groups_list = list_subdirectories(groups_path);
+  sll_link_t groups_list = list_subdirectories_ord(groups_path);
 
   int n_subscribed_groups = 0;
 
@@ -746,7 +754,7 @@ char *retrieve(connection_context_t *connection, char *fs){
 
         DEBUG_MSG("Messagesssss directory: %s\n", msgs_dir);
 
-        sll_link_t msg_list = list_subdirectories(msgs_dir);
+        sll_link_t msg_list = list_subdirectories_ord(msgs_dir);
 
         size_t n_msgs = sll_size(msg_list);
 
