@@ -10,10 +10,8 @@
 
 
 int check_uid(const char str[]){
-  if (str == NULL){
-    throw_error("Invalid user name");
-    return FERROR;
-  }
+  ASSERT(str != NULL, FERROR, "Invalid user name");
+  
   size_t size = strlen(str);
   ASSERT(size == 5, FERROR, "Invalid user name size");
 
@@ -27,10 +25,8 @@ int check_uid(const char str[]){
 }
 
 int check_pass(const char str[]){
-  if(str == NULL){
-    throw_error("Invalid user name");
-    return FERROR;
-  }
+  ASSERT(str != NULL, FERROR, "Invalid password");
+
   size_t size = strlen(str);
   ASSERT(size == 8, FERROR,  "Invalid password size");
 
@@ -43,10 +39,7 @@ int check_pass(const char str[]){
 }
 
 int check_gid(const char str[]){
-  if(str == NULL){
-    throw_error("Invalid group id");
-    return FERROR;
-  }
+  ASSERT(str != NULL, FERROR, "Invalid group id");
 
   size_t size = strlen(str);
   ASSERT(size == 2, FERROR, "Invalid group id size");
@@ -61,10 +54,8 @@ int check_gid(const char str[]){
 }
 
 int check_gname(const char str[]){
-  if(str == NULL){
-    throw_error("Invalid group name");
-    return FERROR;
-  }
+  ASSERT(str != NULL, FERROR, "Invalid group name");
+  
   size_t size = strlen(str);
   ASSERT(size < 24, FERROR, "Invalid group name length");
 
@@ -75,6 +66,7 @@ int check_gname(const char str[]){
     }
   return SUCCESS;
 }
+
 
 int reg(connection_context_t *connection, char *args){
   char *uid = get_word(&args);
