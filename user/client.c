@@ -19,7 +19,7 @@
 
 
 
-bool parse_input (connection_context_t *context, char str[]){
+bool parse_input(connection_context_t *context, char str[]){
   if (strlen(str) == 0) return 1;
   char *command = get_word(&str);
   int error = 1;
