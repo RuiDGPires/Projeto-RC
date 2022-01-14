@@ -127,14 +127,3 @@ Also handles presistente information kept from session to session by the user
 *Eduardo Barrancos* 95566
 
 *Rui Pires* 95670
-
-## Notes
-
-Msg author:
-> GROUPS/01/MSG/0001/author.txt
-
-Msg txt:
-> GROUPS/01/MSG/0001/text.txt
-
-Msg anexed file:
-> GROUPS/01/MSG/0001/FILE/*
