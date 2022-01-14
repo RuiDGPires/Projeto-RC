@@ -81,7 +81,7 @@ int check_mid(const char str[]){
     }
 
   ASSERT(atoi(str) != 0, FERROR, "Invalid message number");
-  
+
   return SUCCESS;
 }
 

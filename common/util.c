@@ -1,4 +1,5 @@
 #include "util.h"
+#include "debug.h"
 #include <unistd.h>
 #include <string.h>
 
@@ -10,22 +11,41 @@ size_t get_line(char buffer[], FILE *stream){
 
 // BEWARE OF WORDS SEPARATED BY MORE THAN ONE SPACE!!!
 char *get_word(char *str[]){
-  if ( *str == NULL) return NULL;
+  size_t size = 0;
   int end = 0;
 
-  size_t size = 0;
+  if ( *str == NULL) return NULL;
+
+  if ( *str[size] == ' '){
+    char *ret = *str;
+    return ret;
+  }
+
   for (; (*str)[size] != ' ' && (*str)[size] != '\0' && (*str)[size] != '\n' ; size++);
 
   if ((*str)[size] == '\0') end = 1;
+
+  if((*str)[size] == '\n'){
+    if((*str)[size+1] == '\0'){
+      (*str)[size-((*str)[size-1] == '\n')] = '\0';
+      char *ret = *str;
+
+      return ret;
+    }
+    char *ret = *str;
+    return ret;
+  }
 
   (*str)[size-((*str)[size-1] == '\n')] = '\0';
 
   char *ret = *str;
 
+  //updates pointer to next word
   if (end) *str = NULL;
   else  *str = &((*str)[size+1]);
 
   return ret;
+
 }
 
 size_t get_word_fd(int fd, char str[]){
