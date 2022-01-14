@@ -127,8 +127,9 @@ bool is_logged_in(const char name[], const char fs[]){
 
     char *user_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_USERS_NAME) + strlen(name)) + 3);
     sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, name);  
-
-    return (file_exists(user_path, "login"));
+    bool ret = (file_exists(user_path, "login"));
+    free(user_path);
+    return ret;
 }
 
 char *reg(connection_context_t *connection, char *args, char *fs){
@@ -237,7 +238,7 @@ char *login_(connection_context_t *connection, char *args, char *fs){
       sprintf(buffer, "RLO OK\n");
       
     }else{
-        sprintf(buffer, "RLO NOK\n");
+      sprintf(buffer, "RLO NOK\n");
     }
 
     free(user_path);
@@ -597,6 +598,7 @@ char *ulist(connection_context_t *connection, char *fs){
       msg = (char *) malloc (sizeof(char)*(strlen("ERR") + 1));
       sprintf(msg, "ERR\n");
       send_tcp_message(connection, msg);
+      free(msg);
       return NULL;
     }
 
@@ -641,6 +643,7 @@ char *ulist(connection_context_t *connection, char *fs){
     send_tcp_message(connection, msg);
 
     free(msg);
+    free(group_dir);
 
     char *_gid = (char *) malloc(sizeof(char *) * strlen(gid));
     sprintf(_gid, "%s", gid);
