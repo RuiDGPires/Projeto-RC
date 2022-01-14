@@ -132,6 +132,9 @@ bool is_logged_in(const char name[], const char fs[]){
     return ret;
 }
 
+/* reg UID pass 
+  sent: REG UID pass
+  received RRG status*/
 char *reg(connection_context_t *connection, char *args, char *fs){
   char *uid = get_word(&args);
   char *pass= get_word(&args);
@@ -163,6 +166,9 @@ char *reg(connection_context_t *connection, char *args, char *fs){
   return uid;
 }
 
+/* unregister UID pass 
+  sent: UNR UID pass
+  received RUN status*/
 char *unregister(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *pass= get_word(&args);
@@ -215,6 +221,9 @@ char *unregister(connection_context_t *connection, char *args, char *fs){
     return uid;
 }
 
+/* login UID pass 
+  sent: LOG UID pass
+  received: RLO status*/
 char *login_(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *pass= get_word(&args);
@@ -248,6 +257,9 @@ char *login_(connection_context_t *connection, char *args, char *fs){
     return uid;
 }
 
+/* logout 
+  sent: OUT UID pass
+  received: ROU status */
 char *logout_(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *pass= get_word(&args);
@@ -280,6 +292,9 @@ char *logout_(connection_context_t *connection, char *args, char *fs){
     return uid;
 }
 
+/* groups | gl 
+  sent: GLS
+  received: RGL N[ GID GName MID]* */
 void groups(connection_context_t *connection, char *args, char *fs){
     (void) args;
 
@@ -337,6 +352,9 @@ void groups(connection_context_t *connection, char *args, char *fs){
     free(groups_path);
 }
 
+/* subscribe GID GName | s GID GName 
+  sent: GSR UID GID GName
+  received RGS status */
 char *subscribe(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *gid = get_word(&args);
@@ -427,6 +445,9 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
     return uid_gid;
 }
 
+/* unsubscribe GID | u GID 
+  sent: GUR UID GID
+  received: RGU status */
 char *unsubscribe(connection_context_t *connection, char *args, char *fs){
     char *uid = get_word(&args);
     char *gid = get_word(&args);
@@ -472,6 +493,9 @@ char *unsubscribe(connection_context_t *connection, char *args, char *fs){
     return uid_gid;
 }
 
+/* my_groups | mgl 
+  sent: GLM UID
+  received: RGM N[ GID GName MID]*  */
 char *my_groups(connection_context_t *connection, char *args, char *fs){
   char *uid = get_word(&args);
 
@@ -587,7 +611,9 @@ char *my_groups(connection_context_t *connection, char *args, char *fs){
   return uid;
 }
 
-
+/* ulist | ul 
+  sent: ULS GID
+  received: RUL status [GName [UID ]*] */
 char *ulist(connection_context_t *connection, char *fs){
     char gid[3];
     gid[2] = '\0';
@@ -653,6 +679,9 @@ char *ulist(connection_context_t *connection, char *fs){
     return _gid;
 }
 
+/* post "text" [Fname] 
+  sent: PST UID GID Tsize text [Fname Fsize data] 
+  received: RPT status */
 char *post(connection_context_t *connection, char *fs){
     DEBUG_MSG_SECTION("PST");
     DEBUG_MSG("posting\n");
@@ -750,6 +779,9 @@ char *post(connection_context_t *connection, char *fs){
     return uid_gid;
 }
 
+/* retrieve MID | r MID 
+  sent: RTV UID GID MID
+  receive: RRT status [N[ MID UID Tsize text [/ Fname Fsize data]]*] */
 char *retrieve(connection_context_t *connection, char *fs){
     char uid[UID_SIZE], gid[GID_SIZE], mid_str[MID_SIZE];
     int fd = connection->tcp_info->fd;
