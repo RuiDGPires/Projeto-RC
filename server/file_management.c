@@ -90,6 +90,8 @@ void delete_directory(char *path){
     ASSERT_NOR(rmdir(path) != -1, "Couldn't remove %s", path);
 
     DEBUG_MSG("%s closed\n", path);
+
+    free(d);
 }
 
 bool directory_exists(char *path){
@@ -115,6 +117,8 @@ sll_link_t list_subdirectories_ord(char *path){
         }
     }
 
+    free(d);
+
     return dir_list;
 }
 
@@ -134,6 +138,8 @@ sll_link_t list_subdirectories(char *path){
                 sll_push(&dir_list, dir->d_name);
         }
     }
+
+    free(d);
 
     return dir_list;
 }
@@ -165,6 +171,8 @@ void delete_file(char *path, char *name){
 
     ASSERT_NOR(remove(file_path) == 0, "Unable to delete file");
     DEBUG_MSG("File deleted\n");
+
+    free(file_path);
 }
 
 bool file_exists(char *path, char *name){
@@ -196,6 +204,8 @@ sll_link_t list_files(char *path){
                 sll_append(&file_list, dir->d_name);
         }
     }
+
+    free(d);
 
     return file_list;
 

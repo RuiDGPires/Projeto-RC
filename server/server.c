@@ -51,16 +51,16 @@ void parse_udp_message(connection_context_t *connection, char *msg, char *fs, bo
       info("Request to subscribe to a group or create a new one");
       info(" UID  | GID ");
       info("%s", uid_gid);
-      free(uid_gid); // Maybe could be done better
     }
+    free(uid_gid);
   }else if (strcmp(command, "GUR") == 0){
     uid_gid = unsubscribe(connection, msg, fs);
     if(verbose){
       info("Request to unsubscribe to a group");
       info(" UID  | GID ");
       info("%s", uid_gid);
-      free(uid_gid); // Maybe could be done better
     }
+    free(uid_gid);
   }else if (strcmp(command, "GLM") == 0){
     uid_gid = my_groups(connection, msg, fs);
     if(verbose){
@@ -87,24 +87,24 @@ void parse_tcp_message(connection_context_t *connection, char *fs,bool verbose){
         if(verbose){
           info("Lists users currently subscribed to the same group as the user");
           info("GID %s", uid_gid);
-          free(uid_gid);
         }
+        free(uid_gid);
     }else if (strcmp(command, "PST") == 0){
         uid_gid = post(connection, fs);
         if(verbose){
           info("User sends a message containing text and possibly also a file to a selected group");
           info(" UID  | GID ");
           info("%s", uid_gid);
-          free(uid_gid); // Maybe could be done better
         }
+        free(uid_gid);
     }else if (strcmp(command, "RTV") == 0){
         uid_gid = retrieve(connection, fs);
         if(verbose){
           info("Request to receive up to 20 messages");
           info(" UID  | GID ");
           info("%s", uid_gid);
-          free(uid_gid); // Maybe could be done better
         }
+        free(uid_gid);
     }else throw_error("Unkown command");
     if(verbose){
       info("IP %s", inet_ntoa(connection->udp_info->addr.sin_addr ));
@@ -145,6 +145,7 @@ int max(int x, int y)
 
 int main(int argc, char *argv[]){
   DEBUG_MSG_SECTION("MAIN");
+  DEBUG_MSG("Init Process %d\n", getpid());
 
   char dsport[PORT_SIZE];
   bool verbose;
@@ -188,17 +189,18 @@ int main(int argc, char *argv[]){
     else{
       if(FD_ISSET(context->tcp_info->fd, &rset)){
         int newfd = accept_tcp_message(context);
-        if(fork() == 0){
+        int pid = fork();
+        if(pid == 0){
             //update fd
+            DEBUG_MSG("Init Process %d\n", getpid());
             close(context->tcp_info->fd);
             context->tcp_info->fd = newfd;
             
             parse_tcp_message(context, fs, verbose);
             close(context->tcp_info->fd);
-            DEBUG_MSG("Close Fork %d\n", getpid());
-            exit(0);
+            running = FALSE;
         }
-        if(fork() == 1){
+        else if(pid == -1){
           DEBUG_MSG("Error Creating Fork %d\n", getpid());
           running = FALSE;
         }
@@ -216,6 +218,13 @@ int main(int argc, char *argv[]){
 
   close_udp(context);
   close_tcp(context);
+
+  free(fs);
+  fs = NULL;
+
+  free(context);
+  context = NULL;
   
+  DEBUG_MSG("Close Process %d\n", getpid());
   return 0;
 }
