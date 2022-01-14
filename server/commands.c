@@ -79,6 +79,9 @@ int check_mid(const char str[]){
       throw_error("Invalid message number chars");
       return FERROR;
     }
+
+  ASSERT(atoi(str) != 0, FERROR, "Invalid message number");
+  
   return SUCCESS;
 }
 
