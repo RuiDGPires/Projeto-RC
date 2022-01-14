@@ -8,6 +8,23 @@ intended to operate on different machines connected to the Internet.
 
 The DS will be running on a machine with known IP address and ports.
 
+## How to run program
+
+### Server
+
+Inside the *server/* folder run the command *make* to compile the program and then the command *./DS* with the available flags:
+
+- *-v* to activate verbose
+- *-p __port__* to set a custom port for the server. Default port: **58065**
+
+### Client
+
+Inside the *user/* folder run the command *make* to compile the program and then the command *./user* with the available flags:
+
+- *-n* to set a custom target server IP. Default target IP: **local host**
+
+- *-p* to set a custom port. Default port: **58065**
+
 ## File organization
 
 **common** *useful functions used across the project*
