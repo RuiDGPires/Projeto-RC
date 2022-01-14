@@ -171,6 +171,8 @@ void delete_file(char *path, char *name){
 
     ASSERT_NOR(remove(file_path) == 0, "Unable to delete file");
     DEBUG_MSG("File deleted\n");
+
+    free(file_path);
 }
 
 bool file_exists(char *path, char *name){

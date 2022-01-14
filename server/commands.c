@@ -275,6 +275,8 @@ char *logout_(connection_context_t *connection, char *args, char *fs){
 
     send_udp_message(connection, buffer);
 
+    free(user_path);
+
     return uid;
 }
 
