@@ -475,7 +475,7 @@ char *unsubscribe(connection_context_t *connection, char *args, char *fs){
                 delete_file(group_dir, uid);
                 sprintf(msg_buffer, "RGU OK\n");
             }else{
-                sprintf(msg_buffer, "RGU NOK\n");
+                sprintf(msg_buffer, "RGU OK\n");
             }
         }else{
             sprintf(msg_buffer, "RGU E_GRP\n");
