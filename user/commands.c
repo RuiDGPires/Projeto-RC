@@ -71,13 +71,18 @@ int check_mid(const char str[]){
   ASSERT(str != NULL, FERROR, "Invalid message number");
 
   size_t size = strlen(str);
-  ASSERT(size <= 4, FERROR, "Invalid message number length");
+  ASSERT(size <= 4 && size >= 1, FERROR, "Invalid message number length");
+
+  //Check for only a space
 
   for (size_t i = 0; i < size; i++)
     if (!isdigit(str[i])){
       throw_error("Invalid message number chars");
       return FERROR;
     }
+
+  ASSERT(atoi(str) != 0, FERROR, "Invalid message number"); 
+
   return SUCCESS;
 }
 
