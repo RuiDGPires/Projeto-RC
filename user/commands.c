@@ -86,7 +86,9 @@ int check_mid(const char str[]){
   return SUCCESS;
 }
 
-
+/* reg UID pass 
+  sent: REG UID pass
+  received RRG status*/
 int reg(connection_context_t *connection, char *args){
   char *uid = get_word(&args);
   char *pass = get_word(&args);
@@ -119,6 +121,9 @@ int reg(connection_context_t *connection, char *args){
   }
 }
 
+/* unregister UID pass 
+  sent: UNR UID pass
+  received RUN status*/
 int unregister(connection_context_t *connection, char *args){
   char *uid = get_word(&args);
   char *pass = get_word(&args);
@@ -152,6 +157,9 @@ int unregister(connection_context_t *connection, char *args){
   }
 }
 
+/* login UID pass 
+  sent: LOG UID pass
+  received: RLO status*/
 int login_(connection_context_t *connection, char *args){
   char *uid = get_word(&args);
   char *pass = get_word(&args);
@@ -189,6 +197,9 @@ int login_(connection_context_t *connection, char *args){
   }
 }
 
+/* logout 
+  sent: OUT UID pass
+  received: ROU status */
 int logout_(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -216,6 +227,7 @@ int logout_(connection_context_t *connection, char *args){
   return SUCCESS;
 }
 
+/* showuid | su */
 int showuid(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -227,7 +239,9 @@ int showuid(connection_context_t *connection, char *args){
   return SUCCESS;
 }
 
-#define RESPONSE_SIZE BUFFER_SIZE*50
+/* groups | gl 
+  sent: GLS
+  received: RGL N[ GID GName MID]* */
 int groups(connection_context_t *connection, char *args){
   char response_buffer[RESPONSE_SIZE];
   int rcv_success;
@@ -258,6 +272,9 @@ int groups(connection_context_t *connection, char *args){
   return SUCCESS;
 }
 
+/* subscribe GID GName | s GID GName 
+  sent: GSR UID GID GName
+  received RGS status */
 int subscribe(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -307,6 +324,9 @@ int subscribe(connection_context_t *connection, char *args){
   }
 }
 
+/* unsubscribe GID | u GID 
+  sent: GUR UID GID
+  received: RGU status */
 int unsubscribe(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -347,6 +367,9 @@ int unsubscribe(connection_context_t *connection, char *args){
   }
 }
 
+/* my_groups | mgl 
+  sent: GLM UID
+  received: RGM N[ GID GName MID]*  */
 int my_groups(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -392,6 +415,7 @@ int my_groups(connection_context_t *connection, char *args){
   }
 }
 
+/* select GID | sag GID */
 int select_(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -409,6 +433,7 @@ int select_(connection_context_t *connection, char *args){
   return SUCCESS;
 }
 
+/* showgid | sg */
 int showgid(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -425,6 +450,9 @@ int showgid(connection_context_t *connection, char *args){
   return SUCCESS;
 }
 
+/* ulist | ul 
+  sent: ULS GID
+  received: RUL status [GName [UID ]*] */
 int ulist(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -472,6 +500,9 @@ int ulist(connection_context_t *connection, char *args){
   }
 }
 
+/* post "text" [Fname] 
+  sent: PST UID GID Tsize text [Fname Fsize data] 
+  received: RPT status */
 int post(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 
@@ -544,7 +575,9 @@ int post(connection_context_t *connection, char *args){
   }
 }
 
-
+/* retrieve MID | r MID 
+  sent: RTV UID GID MID
+  receive: RRT status [N[ MID UID Tsize text [/ Fname Fsize data]]*] */
 int retrieve(connection_context_t *connection, char *args){
   session_context_t *session = connection->session;
 

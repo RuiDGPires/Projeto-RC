@@ -18,7 +18,7 @@
 #include "commands.h"
 
 
-
+/* Parse the input and call the respective arguments */
 bool parse_input(connection_context_t *context, char str[]){
   if (strlen(str) == 0) return 1;
   char *command = get_word(&str);
@@ -64,6 +64,7 @@ bool parse_input(connection_context_t *context, char str[]){
 #define CLEAR(var) var[0] = '\0'
 #define DEFAULT(var, str) if (var[0] == '\0') strcpy(var, str)
 
+/* Parse the flags given by the user */
 void parse_args(char *dsip, char *dsport, int argc, char *argv[]){
   DEBUG_MSG_SECTION("ARGS");
   ASSERT_NOR(argc % 2 != 0, "Invalid number of arguments");

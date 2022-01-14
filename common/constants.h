@@ -14,6 +14,7 @@
 #define PASS_SIZE 9
 #define GID_SIZE 3
 #define MID_SIZE 5
+#define RESPONSE_SIZE BUFFER_SIZE*50
 
 //util.h
 #define TRUE 1
