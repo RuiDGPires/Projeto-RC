@@ -2,13 +2,23 @@
 #include <unistd.h>
 #include <string.h>
 
+/*
+ * Gets text until the next line
+ */
 size_t get_line(char buffer[], FILE *stream){
   fscanf(stream, "%[^\n]", buffer);
   (void) getc(stdin);
   return strlen(buffer);
 }
 
-// BEWARE OF WORDS SEPARATED BY MORE THAN ONE SPACE!!!
+/*
+ * Updates pointer of buffer to the next word
+ * Returns each words every time its called
+ * E.g.:
+ * bufffer=hello word
+ * first call of function returns char* with 'hello' and updates pointer to position of w
+ * second call of function returns char* with 'world' and since it has '\n' assumes end of line
+ */
 char *get_word(char *str[]){
   size_t size = 0;
   int end = 0;
@@ -36,6 +46,10 @@ char *get_word(char *str[]){
 
 }
 
+/*
+ * Reads until it finds a spaces (end of word) or '\n' (end of line).
+ * Adds '\0' since read doesn't add it at the end.
+ */
 size_t get_word_fd(int fd, char str[]){
   size_t size = 0;
 
@@ -56,8 +70,9 @@ void read_fd(int fd, char str[], size_t size){
 
 }
 
-// FIX THIS LATER
-// MAYBE ADD FUNCTION PASSING FOR THROWING ERRORS
+/*
+ * Gets text inside of air quotes
+ */
 char *get_quote(char *str[]){
   if ( *str == NULL) return NULL;
   int end = 0;
@@ -77,6 +92,9 @@ char *get_quote(char *str[]){
   return ret;
 }
 
+/*
+ * Gets size of given file
+ */
 size_t get_file_size(FILE *file){
   // Missing error checking
   fseek(file, 0, SEEK_END); 
@@ -85,6 +103,9 @@ size_t get_file_size(FILE *file){
   return size;
 }
 
+/*
+ * Reads tezt of given file 
+ */
 size_t read_file(FILE *file, size_t size, char *buffer){
   size_t read_size = fread(buffer, size, 1, file);
 

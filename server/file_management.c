@@ -6,11 +6,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-/* -SERVER
-        -USERS
-            -(users folders)
-        -GROUPS
-            -(groups folders) */
+/*
+ * Creates filesystem.
+ * SERVER(dir)
+ *  |_USERS(dir)
+ *  |_GROUPS(dir)
+ */
 char *create_filesystem(char *path){
     //TODO Dont' Close if dir already created, just reset them?
     DEBUG_MSG_SECTION("FSYS");
@@ -38,7 +39,9 @@ char *create_filesystem(char *path){
     return server_path;
 }
 
-/* Deletes everything */
+/*
+ * Deletes filesystem if needed.
+ */
 void destroy_filesystem(char **path){
     DEBUG_MSG_SECTION("FSYS");
   
@@ -47,6 +50,10 @@ void destroy_filesystem(char **path){
     *path = NULL;
 }
 
+/*
+ * Creates a directory given by the path in the first argument.
+ * Directory is created with the name.
+ */
 int create_directory(char *path, char *name){
     DEBUG_MSG_SECTION("FSYS");
 
@@ -60,7 +67,10 @@ int create_directory(char *path, char *name){
     return SUCCESS;
 }
 
-/* Deletes a directory recursively */
+/*
+ * Deletes the directory given by the path in the first argument.
+ * Everything inside the directory is removed aswell, recursevily.
+ */
 int delete_directory(char *path){
     DEBUG_MSG_SECTION("FSYS");
 
@@ -102,12 +112,20 @@ int delete_directory(char *path){
     return SUCCESS;
 }
 
+/*
+ * Checks if directory given by the path in the first argument exist
+ */
 bool directory_exists(char *path){
   struct stat sb;
 
   return stat(path, &sb) == 0 && S_ISDIR(sb.st_mode);
 }
 
+/*
+ * Sorts the subdirectories of the directory given by the path in the argument
+ * Returns:
+ * pointer to list of subdirectories sorted
+ */
 sll_link_t list_subdirectories_ord(char *path){
     DIR *d;
     struct dirent *dir;
@@ -130,6 +148,11 @@ sll_link_t list_subdirectories_ord(char *path){
     return dir_list;
 }
 
+/*
+ * List the subdirectories of the directory given by the path in the argument
+ * Returns:
+ * pointer to list of subdirectories
+ */
 sll_link_t list_subdirectories(char *path){
     DIR *d;
     struct dirent *dir;
@@ -152,6 +175,10 @@ sll_link_t list_subdirectories(char *path){
     return dir_list;
 }
 
+/*
+ * Creates file in the directory given by the path in the first arg, with the name given by the
+ * second arg with the data listed in the third one
+ */
 int create_file(char *path, char *name, char *data){
     DEBUG_MSG_SECTION("FSYS");
 
@@ -173,6 +200,9 @@ int create_file(char *path, char *name, char *data){
     return SUCCESS;
 }
 
+/*
+ * Deletes file with the name of the second arg in the directory given by the path in the first arg
+ */
 int delete_file(char *path, char *name){
     DEBUG_MSG_SECTION("FSYS");
 
@@ -187,6 +217,12 @@ int delete_file(char *path, char *name){
     return SUCCESS;
 }
 
+/*
+ * Checks if file with the name of the second arg exists in the directory given by the path in the first arg
+ * Returns:
+ * true if file exists
+ * false if file doesn't exist
+ */
 bool file_exists(char *path, char *name){
     DEBUG_MSG_SECTION("FSYS");
 
@@ -202,6 +238,11 @@ bool file_exists(char *path, char *name){
     return ret;
 }
 
+/*
+ * List the files that exist in the directory given by the path in the argument
+ * Returns:
+ * pointer to list of files
+ */
 sll_link_t list_files(char *path){
     DIR *d;
     struct dirent *dir;
