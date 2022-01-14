@@ -23,11 +23,15 @@ char *create_filesystem(char *path){
     sprintf(server_path,"%s/%s", path, SERVER_DIRECTORY_NAME);
 
     if (!(directory_exists(server_path))){
-      ASSERT_NOR(mkdir(server_path, 0700) != -1, "Unable to create main directory"); //error
+        if(mkdir(server_path, 0700) == -1){
+            throw_error("Unable to create main directory"); //error
+            exit(1);
+        }
+
       DEBUG_MSG("Server Main Directory created (%s)\n", server_path);
 
-      create_directory(server_path, SERVER_USERS_NAME);
-      create_directory(server_path, SERVER_GROUPS_NAME);
+      if( create_directory(server_path, SERVER_USERS_NAME) == FERROR) exit(1);
+      if( create_directory(server_path, SERVER_GROUPS_NAME) == FERROR) exit(1);
     }else{
       DEBUG_MSG("Server Main Directory already exists (%s)\n", server_path);
     }
@@ -50,22 +54,24 @@ void destroy_filesystem(char **path){
  * Creates a directory given by the path in the first argument.
  * Directory is created with the name.
  */
-void create_directory(char *path, char *name){
+int create_directory(char *path, char *name){
     DEBUG_MSG_SECTION("FSYS");
 
     char *dir_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name)) + 2);
     sprintf(dir_path,"%s/%s", path, name);
-    if(mkdir(dir_path, 0700) == -1) exit(1); //error
+    DEBUG_MSG("Creating directory %s\n", dir_path);
+    ASSERT(mkdir(dir_path, 0700) != -1, FERROR, "Error while creating directory"); //error
     DEBUG_MSG("Directory Created %s\n", dir_path);
 
     free(dir_path);
+    return SUCCESS;
 }
 
 /*
  * Deletes the directory given by the path in the first argument.
  * Everything inside the directory is removed aswell, recursevily.
  */
-void delete_directory(char *path){
+int delete_directory(char *path){
     DEBUG_MSG_SECTION("FSYS");
 
     DIR *d;
@@ -82,7 +88,7 @@ void delete_directory(char *path){
                 //DIR
                 file_path = (char*) malloc (sizeof(char) * (strlen(path) + strlen(dir->d_name) + 2));
                 sprintf(file_path, "%s/%s", path, dir->d_name);
-                delete_directory(file_path);
+                ASSERT(delete_directory(file_path) != FERROR, FERROR, "Error while deleting directory");
 
                 free(file_path);
                 continue;
@@ -90,18 +96,20 @@ void delete_directory(char *path){
         
             file_path = (char*) malloc (sizeof(char) * (strlen(path) + strlen(dir->d_name) + 2));
             sprintf(file_path, "%s/%s", path, dir->d_name);
-            ASSERT_NOR(remove(file_path) != -1, "Couldn't remove %s", file_path); 
+            ASSERT(remove(file_path) != -1, FERROR, "Couldn't remove %s", file_path); 
 
             DEBUG_MSG("%s closed\n", file_path);
 
             free(file_path);
         }
     }
-    ASSERT_NOR(rmdir(path) != -1, "Couldn't remove %s", path);
+    ASSERT(rmdir(path) != -1, FERROR, "Couldn't remove %s", path);
 
     DEBUG_MSG("%s closed\n", path);
 
     free(d);
+
+    return SUCCESS;
 }
 
 /*
@@ -171,14 +179,14 @@ sll_link_t list_subdirectories(char *path){
  * Creates file in the directory given by the path in the first arg, with the name given by the
  * second arg with the data listed in the third one
  */
-void create_file(char *path, char *name, char *data){
+int create_file(char *path, char *name, char *data){
     DEBUG_MSG_SECTION("FSYS");
 
     char *file_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name) + 2));
     sprintf(file_path,"%s/%s", path, name);
 
     FILE *file = fopen(file_path, "w");
-    ASSERT_NOR(file != NULL, "Unable to open file");
+    ASSERT(file != NULL,FERROR, "Unable to open file");
 
     if (data != NULL)
         fprintf(file, "%s", data);
@@ -188,21 +196,25 @@ void create_file(char *path, char *name, char *data){
     DEBUG_MSG("%s File Created (%s)\n", name, file_path);
 
     free(file_path);
+
+    return SUCCESS;
 }
 
 /*
  * Deletes file with the name of the second arg in the directory given by the path in the first arg
  */
-void delete_file(char *path, char *name){
+int delete_file(char *path, char *name){
     DEBUG_MSG_SECTION("FSYS");
 
     char *file_path = (char*) malloc(sizeof(char)*(strlen(path)+strlen(name) + 2));
     sprintf(file_path,"%s/%s", path, name);
 
-    ASSERT_NOR(remove(file_path) == 0, "Unable to delete file");
+    ASSERT(remove(file_path) == 0, FERROR, "Unable to delete file");
     DEBUG_MSG("File deleted\n");
 
     free(file_path);
+
+    return SUCCESS;
 }
 
 /*
