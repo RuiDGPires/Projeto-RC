@@ -117,7 +117,7 @@ sll_link_t list_subdirectories_ord(char *path){
         }
     }
 
-    free(d)
+    free(d);
 
     return dir_list;
 }

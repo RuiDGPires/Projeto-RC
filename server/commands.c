@@ -332,6 +332,7 @@ void groups(connection_context_t *connection, char *args, char *fs){
     free(msg_buffer);
 
     sll_destroy(&group_list);
+    free(groups_path);
 }
 
 char *subscribe(connection_context_t *connection, char *args, char *fs){
@@ -668,6 +669,7 @@ char *post(connection_context_t *connection, char *fs){
       char *msg = (char *)malloc(sizeof(char)*(strlen("RPT NOK") + 1));
       sprintf(msg, "RPT NOK\n");
       send_tcp_message(connection, msg);
+      free(msg);
       return NULL;
     }
     
@@ -724,13 +726,22 @@ char *post(connection_context_t *connection, char *fs){
             FILE *file = fopen(file_path, "w");
             fwrite(file_data, 1, fsize, file);
             fclose(file);
+            
+            free(file_path);
+            free(file_data);
         }
         sprintf(msg_buffer, "RPT %s\n", msg_id_str);
+
+        free(msgs_dir);
+        free(msg_dir);
     }else{
         sprintf(msg_buffer, "RPT NOK\n");
     }
 
     send_tcp_message(connection, msg_buffer);
+
+    free(text);
+    free(group_dir);
 
     char *uid_gid = (char *) malloc(sizeof(char)*(UID_SIZE + GID_SIZE + 3));
     sprintf(uid_gid, "%s | %s", uid, gid);
@@ -749,6 +760,7 @@ char *retrieve(connection_context_t *connection, char *fs){
     if(check_uid(uid) == FERROR || check_gid(gid) == FERROR || check_mid(mid_str) == FERROR){
       char *msg_buffer = (char *)malloc(sizeof(char)*(strlen("RRT NOK") + 1));
       sprintf(msg_buffer, "RRT NOK\n");
+      free(msg_buffer);
       send_tcp_message(connection, msg_buffer);
     }
 
@@ -862,18 +874,25 @@ char *retrieve(connection_context_t *connection, char *fs){
                     for (size_t total_written_size = 0; total_written_size != text_size;)
                         total_written_size += write(fd, &new_buffer[total_written_size], text_size-total_written_size);
                 }
+
                 free(new_buffer);
                 free(msg_dir);
+                free(file_dir);
+                
             END_FIIL();
             write(fd, "\n", 1);
         }
 
         sll_destroy(&msg_list);
+
+        free(msgs_dir);
     }else{
         msg = strdup("RRT NOK\n");
         send_tcp_message(connection, msg);
         free(msg);
     }
+
+    free(group_dir);
 
     char *uid_gid = (char *) malloc(sizeof(char)*(UID_SIZE + GID_SIZE + 3));
     sprintf(uid_gid, "%s | %s", uid, gid);
