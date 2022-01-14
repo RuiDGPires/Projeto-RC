@@ -23,7 +23,7 @@ char *create_filesystem(char *path){
     sprintf(server_path,"%s/%s", path, SERVER_DIRECTORY_NAME);
 
     if (!(directory_exists(server_path))){
-        if(mkdir(server_path, 0700) != -1){
+        if(mkdir(server_path, 0700) == -1){
             throw_error("Unable to create main directory"); //error
             exit(1);
         }
