@@ -75,19 +75,33 @@ Implementation of a linked list
 #### Presistence Information storing system
 
 **SERVER**
+
 &emsp;|-> **USERS**
+
 &emsp;&emsp;|-> ***UID***
+
 &emsp;&emsp;&emsp;|-> **pass.txt** *File that stores user with the correspondant UID 's pass*
+
 &emsp;&emsp;&emsp;|-> **login** *File created if the user is logged in into the system*
+
 &emsp;|-> **GROUPS**
+
 &emsp;&emsp;|->***GID***
+
 &emsp;&emsp;&emsp;|-> **MSG**
+
 &emsp;&emsp;&emsp;&emsp;|-> ***MID***
+
 &emsp;&emsp;&emsp;&emsp;&emsp;|-> **FILE**
+
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;|-> ___/*___ *File sent anexed to the message by the user*
+
 &emsp;&emsp;&emsp;&emsp;&emsp;|-> **author.txt** *File with the message's author's uid*
+
 &emsp;&emsp;&emsp;&emsp;&emsp;|-> **text.txt** *File with the message's text*
+
 &emsp;&emsp;&emsp;|-> ***UID*** *Group creator's uid*
+
 &emsp;&emsp;&emsp;|-> **name.txt** *File with the groups's name*
 
 ### user
