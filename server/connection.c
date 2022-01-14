@@ -5,7 +5,6 @@
 #include <string.h>
 
 
-
 int init_udp(connection_context_t *connection){
   DEBUG_MSG("Init UDP Connection\n");
 
@@ -20,12 +19,14 @@ int init_udp(connection_context_t *connection){
   return SUCCESS;
 }
 
+
 void close_udp(connection_context_t *connection){
   freeaddrinfo(connection->udp_info->res);
   close(connection->udp_info->fd);
   free(connection->udp_info); //Should?
   connection->udp_info = NULL;
 }
+
 
 int init_tcp(connection_context_t *connection){
   DEBUG_MSG("Init TCP Connection\n");
@@ -45,6 +46,7 @@ int init_tcp(connection_context_t *connection){
   return SUCCESS;
 }
 
+
 void close_tcp(connection_context_t *connection){
   freeaddrinfo(connection->tcp_info->res);
   close(connection->tcp_info->fd);
@@ -52,6 +54,7 @@ void close_tcp(connection_context_t *connection){
   connection->tcp_info = NULL;
 }
 
+/* Await an udp message sent by the user */
 void wait_udp_message(connection_context_t *connection, char *buffer, size_t size){
   DEBUG_MSG_SECTION("UDP");
   DEBUG_MSG("Waiting message...\n");
@@ -61,12 +64,14 @@ void wait_udp_message(connection_context_t *connection, char *buffer, size_t siz
   DEBUG_MSG("Message received!:\n\t%s\n", buffer);
 }
 
+/* Send an udp message specifying the message's size */
 void send_udp_message_size(connection_context_t *connection, char *buffer, size_t size){
   connection->udp_info->addrlen = sizeof(connection->udp_info->addr);
 
   ASSERT_NOR(sendto(connection->udp_info->fd,buffer, size,0, (struct sockaddr*) &(connection->udp_info->addr), connection->udp_info->addrlen) != -1, "Error sending message");
 }
 
+/* Accept tcp connection */
 int accept_tcp_message(connection_context_t *connection){
   DEBUG_MSG_SECTION("TCP");
   DEBUG_MSG("Waiting connection...\n");
@@ -77,7 +82,7 @@ int accept_tcp_message(connection_context_t *connection){
   return newfd;
 }
 
-
+/* Await a tcp message from the user */
 void wait_tcp_message(connection_context_t *connection, char *buffer, size_t size){
   DEBUG_MSG_SECTION("TCP");
   DEBUG_MSG("Waiting message...\n");
@@ -87,6 +92,7 @@ void wait_tcp_message(connection_context_t *connection, char *buffer, size_t siz
   DEBUG_MSG("Message received!: \n\t%s\n", buffer);
 }
 
+/* Send a tcp message specifying the message's size */
 void send_tcp_message_size(connection_context_t *connection, char *buffer, size_t size){
   connection->tcp_info->addrlen = sizeof(connection->tcp_info->addr);
 
