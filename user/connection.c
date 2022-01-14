@@ -84,6 +84,7 @@ void close_tcp_connection(protocol_info_t **info){
   *info = NULL;
 }
 
+/* Initializes local client session */
 session_context_t *init_session(connection_context_t *connection){
   session_context_t *session = (session_context_t *) malloc(sizeof(session_context_t));
   logout(session);
@@ -147,6 +148,7 @@ void close_connection(connection_context_t **context){
   *context = NULL;
 }
 
+/* Send and receive udp message specifying response buffer size */
 void send_udp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size, int* rcv_success){
   context->udp_info->addrlen = sizeof(context->udp_info->addr);
   size_t size = strlen(message), n;
@@ -175,6 +177,7 @@ void send_udp_message_size(connection_context_t *context, const char message[], 
   ASSERT_NOR(timer_stop(context->udp_info->fd) != -1, "Unable to reset socket timeout");
 }
 
+/* Send and receive a tcp message specifying the response buffer size */
 void send_tcp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size){
   DEBUG_MSG_SECTION("TCP");
   init_tcp_connection(context);
@@ -199,6 +202,7 @@ void send_tcp_message_size(connection_context_t *context, const char message[], 
   close_tcp_connection(&context->tcp_info);
 }
 
+/* Send and receive a tcp message specifying the buffer size */
 void send_tcp_message_sending_size(connection_context_t *context, const char message[], char response[], size_t size){
   DEBUG_MSG_SECTION("TCP");
 
@@ -226,6 +230,7 @@ void send_tcp_message_sending_size(connection_context_t *context, const char mes
   close_tcp_connection(&context->tcp_info);
 }
 
+/* Send a tcp message */
 void send_tcp_message_no_answer(connection_context_t *context, const char *message){
   DEBUG_MSG_SECTION("TCP");
   init_tcp_connection(context);
