@@ -246,12 +246,12 @@ int groups(connection_context_t *connection, char *args){
 
   if (N != 0){
     success("List of groups:");
-    char *id, *name;
+    char *id, *name, *message;
     for (int i = 0; i < N; i++){
       id = get_word(&response);
       name = get_word(&response);
-      info("\t[%s] %s\n", id, name);
-      (void) get_word(&response);
+      message = get_word(&response);
+      info("\t[%s] %s %s\n", id, name, message);
     }
   }else{
     warning("There are no groups available\n");
