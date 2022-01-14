@@ -1,6 +1,6 @@
-/user/user
-/server/DS
-/server/SERVER
+/src/user/user
+/src/server/DS
+/src/server/SERVER
 .vscode/
 *.jpg
 *.txt
