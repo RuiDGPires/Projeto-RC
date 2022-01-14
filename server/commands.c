@@ -154,8 +154,16 @@ char *reg(connection_context_t *connection, char *args, char *fs){
   if (directory_exists(user_path)){
     sprintf(buffer, "RRG DUP\n");
   }else{
-    create_directory_abs(user_path);
-    create_file(user_path, "pass.txt", pass);
+    if(create_directory_abs(user_path) == FERROR){
+      sprintf(buffer, "RRG NOK\n");
+      send_udp_message(connection, buffer);
+      return NULL;
+    }
+    if(create_file(user_path, "pass.txt", pass) == FERROR){
+      sprintf(buffer, "RRG NOK\n");
+      send_udp_message(connection, buffer);
+      return NULL;
+    }
     sprintf(buffer, "RRG OK\n");
   }
 
@@ -186,7 +194,11 @@ char *unregister(connection_context_t *connection, char *args, char *fs){
     sprintf(user_path, "%s/%s/%s", fs, SERVER_USERS_NAME, uid);
 
     if (check_credencials(uid, pass, fs) == 0){
-      delete_directory(user_path);
+      if(delete_directory(user_path) == FERROR){
+        sprintf(buffer, "RUN NOK\n");
+        send_udp_message(connection, buffer);
+        return NULL;
+      }
 
         char *groups_path = (char *) malloc(sizeof(char)*(strlen(fs) + strlen(SERVER_GROUPS_NAME) + 2));
         sprintf(groups_path, "%s/%s", fs, SERVER_GROUPS_NAME);
@@ -200,7 +212,11 @@ char *unregister(connection_context_t *connection, char *args, char *fs){
             sprintf(group_path, "%s/%s", groups_path, group);
 
             if (file_exists(group_path, uid)){
-                delete_file(group_path, uid);
+                if(delete_file(group_path, uid) == FERROR){
+                  sprintf(buffer, "RUN NOK\n");
+                  send_udp_message(connection, buffer);
+                  return NULL;
+                }
             }
 
             free(group_path);
@@ -242,7 +258,11 @@ char *login_(connection_context_t *connection, char *args, char *fs){
 
     if (check_credencials(uid, pass, fs) == 0){
       if(!(is_logged_in(uid, fs))){
-        create_file(user_path, "login", NULL);
+        if(create_file(user_path, "login", NULL) == FERROR){
+          sprintf(buffer, "RLO NOK\n");
+          send_udp_message(connection, buffer);
+          return NULL;
+        }
       }
       sprintf(buffer, "RLO OK\n");
       
@@ -278,7 +298,11 @@ char *logout_(connection_context_t *connection, char *args, char *fs){
 
     if (check_credencials(uid, pass, fs) == 0){
         if(is_logged_in(uid, fs)){
-            delete_file(user_path, "login");
+          if(delete_file(user_path, "login") == FERROR){
+            sprintf(buffer, "ROU NOK\n");
+            send_udp_message(connection, buffer);
+            return NULL;
+          }
         }
         sprintf(buffer, "ROU OK\n");
     }else{
@@ -398,9 +422,21 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
             }else{
                 sprintf(group_dir, "%s/%02d", groups_dir, new_id);
 
-                create_directory_abs(group_dir);
-                create_directory(group_dir, "MSG");
-                create_file(group_dir, "name.txt", gname);
+                if(create_directory_abs(group_dir) == FERROR){
+                  sprintf(msg_buffer, "RGS NOK\n");
+                  send_udp_message(connection, msg_buffer);
+                  return NULL;
+                }
+                if(create_directory(group_dir, "MSG") == FERROR){
+                  sprintf(msg_buffer, "RGS NOK\n");
+                  send_udp_message(connection, msg_buffer);
+                  return NULL;
+                }
+                if(create_file(group_dir, "name.txt", gname) == FERROR){
+                  sprintf(msg_buffer, "RGS NOK\n");
+                  send_udp_message(connection, msg_buffer);
+                  return NULL;
+                }
 
                 sll_destroy(&group_list);
                 sprintf(gid, "%02d", new_id);
@@ -426,7 +462,11 @@ char *subscribe(connection_context_t *connection, char *args, char *fs){
                 if (!has_msg)
                     sprintf(msg_buffer, "RGS E_GNAME\n");
             }else{
-                create_file(group_dir, uid, NULL);
+                if(create_file(group_dir, uid, NULL) == FERROR){
+                  sprintf(msg_buffer, "RGS NOK\n");
+                  send_udp_message(connection, msg_buffer);
+                  return NULL;
+                }
                 if (!has_msg)
                     sprintf(msg_buffer, "RGS OK\n");
             }
@@ -472,7 +512,11 @@ char *unsubscribe(connection_context_t *connection, char *args, char *fs){
         sprintf(group_dir, "%s/%s/%s", fs, SERVER_GROUPS_NAME, gid);
         if (directory_exists(group_dir)){
             if (file_exists(group_dir, uid)){
-                delete_file(group_dir, uid);
+                if(delete_file(group_dir, uid) == FERROR){
+                  sprintf(msg_buffer, "RGU NOK\n");
+                  send_udp_message(connection, msg_buffer);
+                  return NULL;
+                }
                 sprintf(msg_buffer, "RGU OK\n");
             }else{
                 sprintf(msg_buffer, "RGU NOK\n");
@@ -729,13 +773,21 @@ char *post(connection_context_t *connection, char *fs){
 
         char msg_id_str[5];
         sprintf(msg_id_str, "%04ld", msg_id);
-        create_directory(msgs_dir, msg_id_str);
+        if(create_directory(msgs_dir, msg_id_str) == FERROR){
+          sprintf(msg_buffer, "RPT NOK\n");
+          send_udp_message(connection, msg_buffer);
+          return NULL;
+        }
 
         char *msg_dir = (char *) malloc(sizeof(char)*(strlen(msgs_dir) + 7));
         sprintf(msg_dir, "%s/%s", msgs_dir, msg_id_str);
 
-        create_file(msg_dir, "author.txt", uid);
-        create_file(msg_dir, "text.txt", text);
+        if(create_file(msg_dir, "author.txt", uid) == FERROR || create_file(msg_dir, "text.txt", text) == FERROR){
+          sprintf(msg_buffer, "RPT NOK\n");
+          send_udp_message(connection, msg_buffer);
+          return NULL;
+        }
+        
 
         char fname[FNAME_SIZE];
 
@@ -744,7 +796,11 @@ char *post(connection_context_t *connection, char *fs){
         if (c == ' '){ // if there is a file
             get_word_fd(fd, fname);
 
-            create_directory(msg_dir, "FILE");
+            if(create_directory(msg_dir, "FILE") == FERROR){
+              sprintf(msg_buffer, "RPT NOK\n");
+              send_udp_message(connection, msg_buffer);
+              return NULL;
+            }
             char *file_path = (char *) malloc(sizeof(char) * (strlen(msg_dir) + strlen("FILE") + strlen(fname) + 5));
             sprintf(file_path, "%s/FILE/%s", msg_dir, fname);
 

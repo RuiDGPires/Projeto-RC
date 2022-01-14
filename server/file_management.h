@@ -15,16 +15,16 @@
 char *create_filesystem(char *);
 void destroy_filesystem(char **);
 
-void create_directory(char *, char *);
+int create_directory(char *, char *);
 #define create_directory_abs(dir) create_directory(dir, "/")
 
 sll_link_t list_subdirectories(char *);
 sll_link_t list_subdirectories_ord(char *);
-void delete_directory(char *);
+int delete_directory(char *);
 bool directory_exists(char *);
 
-void create_file(char *path, char *name, char *data);
-void delete_file(char *path, char *name);
+int create_file(char *path, char *name, char *data);
+int delete_file(char *path, char *name);
 bool file_exists(char *, char *);
 sll_link_t list_files(char *);
 #endif
