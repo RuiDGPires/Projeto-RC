@@ -149,9 +149,9 @@ void close_connection(connection_context_t **context){
 
 void send_udp_message_size(connection_context_t *context, const char message[], char response[], size_t response_size, int* rcv_success){
   context->udp_info->addrlen = sizeof(context->udp_info->addr);
-  int size = strlen(message), n;
+  size_t size = strlen(message), n;
 
-  n = sendto(context->udp_info->fd, message, size + 1, 0, context->udp_info->res->ai_addr, context->udp_info->res->ai_addrlen);
+  n = sendto(context->udp_info->fd, message, size, 0, context->udp_info->res->ai_addr, context->udp_info->res->ai_addrlen);
   ASSERT_NOR(n != -1, "Unable to send message");
   DEBUG_MSG("Message sent: %s\n", message);
 

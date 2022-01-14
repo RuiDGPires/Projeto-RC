@@ -232,9 +232,7 @@ int groups(connection_context_t *connection, char *args){
   char response_buffer[RESPONSE_SIZE];
   int rcv_success;
 
-  char buffer[BUFFER_SIZE];
-  sprintf(buffer, "GLS\n");
-  send_udp_message_size(connection, buffer, response_buffer, RESPONSE_SIZE, &rcv_success);
+  send_udp_message_size(connection, "GLS\n", response_buffer, RESPONSE_SIZE, &rcv_success);
 
   ASSERT(rcv_success == 1, FERROR, "An error occured while connecting to the server");
   

@@ -24,17 +24,6 @@ char *get_word(char *str[]){
 
   if ((*str)[size] == '\0') end = 1;
 
-  if((*str)[size] == '\n'){
-    if((*str)[size+1] == '\0'){
-      (*str)[size-((*str)[size-1] == '\n')] = '\0';
-      char *ret = *str;
-
-      return ret;
-    }
-    char *ret = *str;
-    return ret;
-  }
-
   (*str)[size-((*str)[size-1] == '\n')] = '\0';
 
   char *ret = *str;
