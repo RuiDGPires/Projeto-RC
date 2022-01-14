@@ -2,10 +2,12 @@
 #include <string.h>
 #include "../common/util.h"
 
+/* Create linked list */
 sll_link_t sll_create(){
   return NULL;
 }
 
+/* Destroy a linked list and free any alloced memory */
 void sll_destroy(sll_link_t *list){
   if (*list == NULL) return; 
 
@@ -16,6 +18,7 @@ void sll_destroy(sll_link_t *list){
   *list = NULL;
 }
 
+/* Append a node to the end of a linked list */
 void sll_append(sll_link_t *list, const char *str){
   // Traverse until the end of the list
   if ((*list) == NULL){
@@ -35,6 +38,7 @@ void sll_append(sll_link_t *list, const char *str){
   }
 }
 
+/* Append a node to its ordered position in a linked list */
 void sll_append_ord(sll_link_t *list, const char *str, int (*ord)(const char *, const char *)){
   if ((*list) == NULL){
     //Empty
@@ -52,6 +56,7 @@ void sll_append_ord(sll_link_t *list, const char *str, int (*ord)(const char *, 
   }
 }
 
+/* Push a node to the beginning of a linked list */
 void sll_push(sll_link_t *list, const char *str){
   if ((*list) == NULL){
     *list = (sll_link_t) malloc(sizeof(struct sll_node));
@@ -68,6 +73,7 @@ void sll_push(sll_link_t *list, const char *str){
   }
 }
 
+/* Return the current size of a linked list */
 size_t sll_size(sll_link_t list){
     if (list == NULL) return 0;
     return list->size;
